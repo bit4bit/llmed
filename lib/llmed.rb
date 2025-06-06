@@ -159,7 +159,7 @@ You must only modify the following source code:
         @logger.info("APPLICATION #{@name} RELEASE FILE #{release_source_code}")
       end
       @logger.info("APPLICATION #{@name} INPUT RELEASE FILE #{release_main_source_code}")
-      File.read(release_main_source_code)
+      File.read(release_source_code)
     end
 
     def output_file(output_dir, mode = 'w', &block)
