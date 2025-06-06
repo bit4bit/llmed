@@ -29,8 +29,8 @@ end
 
 * Cycle
   * Edit application.
-  * Once you agree with the provider's response, increase the value of the `release` attribute
-* Commit the release file (.r<number>) and the source code (.llmed).
+  * Once you agree with the current state of the application, increase the value of the `release` attribute
+* Commit the release file (.release) and the source code (.llmed).
 
 # Usage
 
@@ -47,6 +47,10 @@ end
 
 * `bundle3.1 install --path vendor/`
 * `OPENAI_API_KEY=xxx rake llmed[examples/tictactoe.rb]`
+
+# Interesting
+
+* The same prompt and the same source code produce exactly the same source code, but if we change the prompt a little bit, the source code also changes a little bit. So we have almost a one-to-one relationship. Can the prompt be the source of truth?
 
 # History
 
