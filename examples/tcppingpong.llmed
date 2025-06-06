@@ -1,0 +1,47 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_language :ruby
+
+application "TCP Ping", language: :ruby, output_file: "tcpping.cllmed" do
+  context "logic" do
+    <<-LLM
+    TCP Client after connection send 'ping' and wait for 'pong' for sending again 'ping'.
+    END
+    LLM
+  end
+
+  context "main" do
+    <<-LLM
+    TCP Client connect to 'localhost:8500'.
+    LLM
+  end
+
+  context "logging" do
+    <<-LLM
+    Show to the user the connection host and port.
+    LLM
+  end
+end
+
+application "TCP Pong", language: :python, output_file: "tcppong.cllmed" do
+  context "logic" do
+    <<-LLM
+    TCP Server must wait for 'ping' after respond 'pong' and wait again 'ping'.
+    TCP Server must handle concurrent connections.
+    Must register every time a 'ping' is received.
+    Must show the how many times a 'ping' was received.
+    LLM
+  end
+
+  context "main" do
+    <<-LLM
+    TCP Server listening at 'localhost:8500'.
+    LLM
+  end
+
+  context "logging" do
+    <<-LLM
+    Show to the user the listening host and port.
+    Show to the user a example using telnet linux command.
+    LLM
+  end
+end

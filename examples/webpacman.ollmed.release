@@ -1,0 +1,222 @@
+
+// LLMED-COMPILED
+const http = require('http');
+const fs = require('fs');
+const path = require('url').parse;
+
+const server = http.createServer((req, res) => {
+    const url = path(req.url, true);
+    let filePath = '.' + url.pathname;
+
+    if (filePath === './') {
+        filePath = './index.html';
+    }
+
+    const extname = String(filePath).split('.').pop();
+    let contentType = 'text/html';
+
+    switch (extname) {
+        case 'js':
+            contentType = 'text/javascript';
+            break;
+        case 'css':
+            contentType = 'text/css';
+            break;
+        case 'json':
+            contentType = 'application/json';
+            break;
+        case 'png':
+            contentType = 'image/png';
+            break;
+        case 'jpg':
+            contentType = 'image/jpg';
+            break;
+        case 'gif':
+            contentType = 'image/gif';
+            break;
+        case 'svg':
+            contentType = 'image/svg+xml';
+            break;
+        case 'wav':
+            contentType = 'audio/wav';
+            break;
+        case 'mp4':
+            contentType = 'video/mp4';
+            break;
+        case 'woff':
+            contentType = 'application/font-woff';
+            break;
+        case 'ttf':
+            contentType = 'application/font-sfnt';
+            break;
+    }
+
+    fs.readFile(filePath, (error, content) => {
+        if (error) {
+            if (error.code == 'ENOENT') {
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                res.end('<h1>404 Not Found</h1>', 'utf-8');
+            } else {
+                res.writeHead(500);
+                res.end('Sorry, there was an error: ' + error.code + ' ..\n');
+            }
+        } else {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content, 'utf-8');
+        }
+    });
+});
+
+const port = 3000;
+server.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}/`);
+});
+
+// index.html
+const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pacman Game</title>
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; background-color: black; color: white; }
+        canvas { border: 1px solid white; margin-top: 20px; }
+        #score { font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const box = 20;
+        let pacman = { x: box * 1, y: box * 1, direction: 'RIGHT' };
+        const fruits = [{ x: box * 5, y: box * 5 }, { x: box * 15, y: box * 15 }, { x: box * 25, y: box * 25 }];
+        let score = 0;
+        const walls = generateMaze(30, 30);
+        const enemies = [
+            { x: box * 18, y: box * 18, direction: 'LEFT' },
+            { x: box * 18, y: box * 17, direction: 'UP' },
+            { x: box * 17, y: box * 18, direction: 'LEFT' }
+        ];
+
+        document.addEventListener('keydown', direction);
+
+        function direction(event) {
+            if (event.keyCode == 37) pacman.direction = 'LEFT';
+            else if (event.keyCode == 38) pacman.direction = 'UP';
+            else if (event.keyCode == 39) pacman.direction = 'RIGHT';
+            else if (event.keyCode == 40) pacman.direction = 'DOWN';
+        }
+
+        function generateMaze(rows, cols) {
+            let maze = Array.from({ length: rows }, () => Array(cols).fill(1));
+
+            function carvePath(r, c) {
+                const directions = [
+                    { r: -2, c: 0 }, // up
+                    { r: 0, c: 2 }, // right
+                    { r: 2, c: 0 }, // down
+                    { r: 0, c: -2 } // left
+                ];
+                directions.sort(() => Math.random() - 0.5); // Shuffle directions
+
+                for (const { r: dr, c: dc } of directions) {
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (nr > 0 && nr < rows - 1 && nc > 0 && nc < cols - 1 && maze[nr][nc] === 1) {
+                        maze[r + dr / 2][c + dc / 2] = 0; // Carve the path
+                        maze[nr][nc] = 0; // Mark the cell as free
+                        carvePath(nr, nc); // Recur
+                    }
+                }
+            }
+
+            carvePath(1, 1);
+            return maze;
+        }
+
+        function drawMaze() {
+            for (let r = 0; r < walls.length; r++) {
+                for (let c = 0; c < walls[r].length; c++) {
+                    if (walls[r][c] === 1) {
+                        ctx.fillStyle = 'blue';
+                        ctx.fillRect(c * box, r * box, box, box);
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMaze();
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(pacman.x, pacman.y, box, box);
+            fruits.forEach(fruit => {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(fruit.x, fruit.y, box, box);
+            });
+            enemies.forEach(enemy => {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(enemy.x, enemy.y, box, box);
+            });
+
+            let pacmanX = pacman.x;
+            let pacmanY = pacman.y;
+
+            if (pacman.direction === 'LEFT') pacmanX -= box;
+            if (pacman.direction === 'UP') pacmanY -= box;
+            if (pacman.direction === 'RIGHT') pacmanX += box;
+            if (pacman.direction === 'DOWN') pacmanY += box;
+
+            if (walls[pacmanY / box][pacmanX / box] === 1) {
+                pacman.x = pacman.x; // Stop if hit a wall
+            } else {
+                pacman.x = pacmanX;
+                pacman.y = pacmanY;
+            }
+
+            fruits.forEach((fruit, index) => {
+                if (pacman.x === fruit.x && pacman.y === fruit.y) {
+                    score++;
+                    fruits.splice(index, 1);
+                    document.getElementById('score').innerText = 'Score: ' + score;
+                }
+            });
+
+            enemies.forEach(enemy => {
+                let enemyX = enemy.x;
+                let enemyY = enemy.y;
+
+                if (enemy.direction === 'LEFT') enemyX -= box;
+                else if (enemy.direction === 'RIGHT') enemyX += box;
+                else if (enemy.direction === 'UP') enemyY -= box;
+                else if (enemy.direction === 'DOWN') enemyY += box;
+
+                if (walls[enemyY / box][enemyX / box] === 1) {
+                    enemy.direction = ['LEFT', 'RIGHT', 'UP', 'DOWN'][Math.floor(Math.random() * 4)]; // Change direction if hit a wall
+                } else {
+                    enemy.x = enemyX;
+                    enemy.y = enemyY;
+                }
+
+                if (enemy.x === pacman.x && enemy.y === pacman.y) {
+                    alert('Game Over! Score: ' + score);
+                    clearInterval(game);
+                }
+            });
+
+            if (fruits.length === 0) {
+                alert('You Win! Score: ' + score);
+                clearInterval(game);
+            }
+        }
+
+        const game = setInterval(draw, 100);
+    </script>
+</body>
+</html>
+`;
+
+fs.writeFileSync('index.html', htmlContent);

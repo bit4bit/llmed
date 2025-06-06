@@ -1,0 +1,10 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_language :ruby
+
+application "JOKE", language: :ruby, output_file: "joke.ollmed" do
+  context "joke" do
+    <<-LLM
+    Shows to the user a joke.
+    LLM
+  end
+end

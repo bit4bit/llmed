@@ -1,0 +1,57 @@
+#!/bin/env ruby
+# Copyright 2025 Jovany Leandro G.C <bit4bit@riseup.net>
+# frozen_string_literal: true
+require 'optparse'
+require 'llmed'
+
+logger = Logger.new(STDERR)
+output_dir = './llmed-out'
+release_dir = output_dir
+template = <<-TMP
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+
+# Increment the RELEASE number once you approve the output.
+application "hi world", release: nil, language: '<HERE LANGUAGE>', output_file: "<HERE NAME>.ollmed" do
+  context "main" do
+    <<-LLM
+        Show to user 'hi world!'.
+    LLM
+  end
+end
+TMP
+
+OptionParser.new do |parser|
+  parser.banner = "Usage: llmed [options] <application file .llmed or stdin>"
+  parser.on_tail("-h", "--help", "Show this message") do
+    puts parser
+    puts "\n# Website\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed"
+    puts "\n# Examples\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed/examples"
+    exit
+  end
+
+  parser.on('-t', '--template PATH', String, 'Create template') do |path|
+    File.write path, template
+    exit
+  end
+
+  parser.on('--output-dir DIR', String) do |path|
+    output_dir = path
+  end
+
+  parser.on('--release-dir DIR', String) do |path|
+    release_dir = path
+  end
+
+  parser.on('-q', '--quiet') do
+    logger.level = :error
+  end
+end.parse!
+
+source_code = ARGF.read
+if ARGF.respond_to?(:path)
+  release_dir = File.dirname(ARGF.path)
+end
+
+llmed = LLMed.new(logger: logger)
+llmed.eval_source source_code
+llmed.compile(output_dir: output_dir, release_dir: release_dir)

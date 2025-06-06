@@ -1,0 +1,12 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_prompt "Linux terminal agent.", input_variables: []
+
+application "System Interaction", language: :none, output_file: STDOUT do
+  context("files") { sh 'ls /etc' }
+
+  context "application" do
+    <<-LLM
+    Show the user the quantity of files.
+    LLM
+  end
+end

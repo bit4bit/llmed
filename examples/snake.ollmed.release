@@ -1,0 +1,153 @@
+
+# LLMED-COMPILED
+
+require 'gtk3'
+
+class SnakeGame
+  attr_accessor :score, :time_elapsed
+
+  def initialize
+    @window = Gtk::Window.new("Snake Game")
+    @window.set_default_size(400, 400)
+    @window.set_window_position(:center)
+    @window.signal_connect("destroy") { Gtk.main_quit }
+    
+    @drawing_area = Gtk::DrawingArea.new
+    @window.add(@drawing_area)
+    
+    @drawing_area.signal_connect("draw") { |widget, cr| draw(cr) }
+    
+    @snake = [[5, 5]]
+    @direction = [1, 0]
+    @fruit = random_fruit_position
+    @score = 0
+    @time_elapsed = 0
+    @running = true
+    @explosion_particles = []
+
+    GLib::Timeout.add(1000) { update_clock }
+    GLib::Timeout.add(200) { game_loop }
+    @window.signal_connect("key-press-event") { |widget, event| on_key_press(event) }
+
+    @window.show_all
+  end
+
+  def draw(cr)
+    cr.set_source_rgb(0, 0, 0)
+    cr.paint
+
+    draw_walls(cr)
+    draw_snake(cr)
+    draw_fruit(cr)
+    draw_explosion(cr)
+    draw_score_and_clock(cr)
+  end
+
+  def draw_walls(cr)
+    cr.set_source_rgb(rand, rand, rand)
+    cr.rectangle(0, 0, 400, 20)
+    cr.rectangle(0, 380, 400, 20)
+    cr.rectangle(0, 0, 20, 400)
+    cr.rectangle(380, 0, 20, 400)
+    cr.fill
+  end
+
+  def draw_snake(cr)
+    cr.set_source_rgb(0, 1, 0)
+    @snake.each do |segment|
+      cr.rectangle(segment[0] * 20, segment[1] * 20, 20, 20)
+      cr.fill
+    end
+  end
+
+  def draw_fruit(cr)
+    cr.set_source_rgb(rand, rand, rand)
+    cr.rectangle(@fruit[0] * 20, @fruit[1] * 20, 20, 20)
+    cr.fill
+  end
+
+  def draw_explosion(cr)
+    @explosion_particles.each do |particle|
+      cr.set_source_rgb(rand, rand, rand)
+      cr.arc(particle[:x] * 20, particle[:y] * 20, 5, 0, 2 * Math::PI)
+      cr.fill
+    end
+  end
+
+  def draw_score_and_clock(cr)
+    cr.set_source_rgb(1, 1, 1)
+    cr.select_font_face("Sans", Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL)
+    cr.set_font_size(20)
+    cr.move_to(10, 390)
+    cr.show_text("Score: #{@score} Time: #{@time_elapsed}s")
+  end
+
+  def on_key_press(event)
+    case event.keyval
+    when Gdk::Keyval::KEY_Left
+      @direction = [-1, 0] unless @direction == [1, 0]
+    when Gdk::Keyval::KEY_Right
+      @direction = [1, 0] unless @direction == [-1, 0]
+    when Gdk::Keyval::KEY_Up
+      @direction = [0, -1] unless @direction == [0, 1]
+    when Gdk::Keyval::KEY_Down
+      @direction = [0, 1] unless @direction == [0, -1]
+    end
+  end
+
+  def game_loop
+    return false unless @running
+
+    move_snake
+    check_collisions
+    @drawing_area.queue_draw
+    true
+  end
+
+  def move_snake
+    new_head = [@snake.first[0] + @direction[0], @snake.first[1] + @direction[1]]
+    @snake.unshift(new_head)
+    if new_head == @fruit
+      @score += 10
+      @fruit = random_fruit_position
+      create_explosion_effect(new_head)
+    else
+      @snake.pop
+    end
+  end
+
+  def check_collisions
+    head = @snake.first
+    if head[0] < 1 || head[1] < 1 || head[0] > 18 || head[1] > 18 || @snake.drop(1).include?(head)
+      @running = false
+      puts "Game Over! Your score: #{@score}"
+      Gtk.main_quit
+    end
+  end
+
+  def update_clock
+    return false unless @running
+
+    @time_elapsed += 1
+    @explosion_particles.clear
+    @drawing_area.queue_draw
+    true
+  end
+
+  def random_fruit_position
+    loop do
+      position = [rand(1..18), rand(1..18)]
+      return position unless @snake.include?(position)
+    end
+  end
+
+  def create_explosion_effect(position)
+    10.times do
+      @explosion_particles << { x: position[0] + rand(-1.0..1.0), y: position[1] + rand(-1.0..1.0) }
+    end
+  end
+end
+
+Gtk.init
+SnakeGame.new
+Gtk.main

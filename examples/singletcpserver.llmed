@@ -1,0 +1,26 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_language :ruby
+
+application "Single TCP Server", output_file: "singletcpserver.cllmed" do
+  context "logic" do
+    <<-LLM
+    TCP Server must return the response 'hey hey hey'.
+    LLM
+  end
+
+  context "main" do
+    <<-LLM
+    TCP Server listening at 'localhost:6000'.
+    LLM
+  end
+
+  # Print and Show are different
+  # Print most of the time produces a comment print in the code
+  # But show most of the times print at terminal.
+  context "logging" do
+    <<-LLM
+    Show to the user the listening host and port.
+    Show to the user a example using telnet linux command.
+    LLM
+  end
+end

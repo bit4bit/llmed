@@ -1,0 +1,16 @@
+# -*- mode: ruby -*-
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+application "tic tac toe", language: 'c', output_file: "ticktactoe.cllmed" do
+  context "main" do
+    <<-LLM
+    Implementa el juego de tic tac toe solo usando la libreria estandar.
+    LLM
+  end
+  
+  context "para dos jugadores" do
+    <<-LLM
+    Los jugadores utilizan la entrada de la terminal para indicar donde ubicar la ficha.
+    Debe dar un ejemplo al usuario de como indicar la posicion.
+    LLM
+  end
+end

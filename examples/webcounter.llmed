@@ -1,0 +1,17 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "WEB Counter", release: 1, language: :node, output_file: "webcounter.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    Must use only the standard library.
+    LLM
+  end
+
+  context "web browser application" do
+    <<-LLM
+    Web browser application that shows a counter that increase every second.
+    The counter must be in number base 2.
+    Show the counter in the center of the page.
+    LLM
+  end
+end

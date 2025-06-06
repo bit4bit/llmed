@@ -1,0 +1,26 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "WEB Pacman", release: 6, language: :node, output_file: "webpacman.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    Must use only the standard library.
+    LLM
+  end
+
+  context "web browser application" do
+    <<-LLM
+    Implementation of pacman game:
+    - has random mazes that use all the map window and has connected paths.
+    - has 3 enemies that chase pacman.
+    - has static fruits.
+    - pacman can move through free spaces in the maze.
+    - pacman stops if hits a wall.
+    - enemies stop if hits a wall.
+    - game finish once pacman ate all the fruits.
+    Show pacman.
+    Show the points.
+    Show the walls of the maze.
+    UI using web browser features.
+    LLM
+  end
+end
