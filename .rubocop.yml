@@ -1,0 +1,12 @@
+require: rubocop-rspec
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+RSpec/ExampleLength:
+  Max: 21
+Metrics/MethodLength:
+  Max: 21
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
