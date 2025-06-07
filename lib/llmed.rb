@@ -87,7 +87,8 @@ Wrap with comment every code that belongs to the indicated context, example in r
     end
 
     def prompt(language:, source_code:, update_context_digests: [])
-      @prompt.format(language: language, source_code: source_code, update_context_digests: update_context_digests.join(','))
+      @prompt.format(language: language, source_code: source_code,
+                     update_context_digests: update_context_digests.join(','))
     end
 
     # Change the default prompt, input variables: language, source_code
@@ -180,10 +181,12 @@ Wrap with comment every code that belongs to the indicated context, example in r
       File.read(release_source_code)
     end
 
-    def release_contexts(output_dir, release_dir)
+    def release_contexts(_output_dir, release_dir)
       return {} unless @release
+
       release_source_code = Pathname.new(release_dir) + "#{@output_file}.r#{@release}#{@language}.cache"
-      return {} if !File.exist?(release_source_code)
+      return {} unless File.exist?(release_source_code)
+
       File.read(release_source_code).scan(/context='(.+)' digest='(.+)'/).to_h
     end
 
@@ -200,13 +203,37 @@ Wrap with comment every code that belongs to the indicated context, example in r
       end
     end
 
+    def patch_or_create(output_dir, release_dir, output)
+      release_source_code_path = Pathname.new(release_dir) + "#{@output_file}.r#{@release}#{@language}.cache"
+
+      if @release && File.exist?(release_source_code_path)
+        release_source_code = File.read(release_source_code_path)
+        output_contexts = output.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'>(.+?)</llmed-code>}im)
+        output_contexts.each do |match|
+          name, digest, new_code = match
+          @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name}")
+          release_source_code = release_source_code.sub(%r{(.*?)(<llmed-code context='#{name}' digest='.*?'>)(.+?)(</llmed-code>)(.*?)}m) do
+            "#{::Regexp.last_match(1)}<llmed-code context='#{name}' digest='#{digest}'>#{new_code}#{::Regexp.last_match(4)}#{::Regexp.last_match(5)}"
+          end
+        end
+
+        output_file(output_dir) do |file|
+          file.write(release_source_code)
+        end
+      else
+        output_file(output_dir) do |file|
+          file.write(output)
+        end
+      end
+    end
+
     def digests_of_context_to_update(output_dir, release_dir)
       update_context_digest = []
       release_contexts = release_contexts(output_dir, release_dir)
       unless release_contexts.empty?
         @contexts.each do |ctx|
           release_context_digest = release_contexts[ctx.name]
-          if !ctx.same_digest?(release_context_digest)
+          unless ctx.same_digest?(release_context_digest)
             update_context_digest << release_context_digest
             @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{ctx.name}")
           end
@@ -286,7 +313,8 @@ Wrap with comment every code that belongs to the indicated context, example in r
                                            source_code: app.source_code(
                                              output_dir, release_dir
                                            ),
-                                           update_context_digests: app.digests_of_context_to_update(output_dir, release_dir))
+                                           update_context_digests: app.digests_of_context_to_update(output_dir,
+                                                                                                    release_dir))
     messages = [LLMed::LLM::Message::System.new(system_content)]
     app.contexts.each do |ctx|
       next if ctx.skip?
@@ -296,7 +324,7 @@ Wrap with comment every code that belongs to the indicated context, example in r
 
     llm_response = llm.chat(messages: messages)
     @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
-    write_output(app, output_dir, llm_response.source_code)
+    write_output(app, output_dir, release_dir, llm_response.source_code)
     write_statistics(app, release_dir, llm_response)
     app.notify("COMPILE DONE #{llm_response.duration_seconds}")
   end
@@ -305,10 +333,8 @@ Wrap with comment every code that belongs to the indicated context, example in r
     app.write_statistics(release_dir, response)
   end
 
-  def write_output(app, output_dir, output)
-    app.output_file(output_dir) do |file|
-      file.write(output)
-    end
+  def write_output(app, output_dir, release_dir, output)
+    app.patch_or_create(output_dir, release_dir, output)
   end
 end
 
