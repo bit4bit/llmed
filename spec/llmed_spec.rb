@@ -56,8 +56,9 @@ describe LLMed do
     expect(stats).to include(
                        'provider' => 'openai',
                        'model' => 'gpt-4o-mini',
-                       'release' => nil,
+                       'release' => nil
                      )
+    expect(stats['duration_seconds']).to be > 0
   end
 
   it 'compile application to STDOUT' do

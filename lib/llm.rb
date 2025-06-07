@@ -16,7 +16,7 @@ class LLMed
       end
     end
 
-    Response = Struct.new(:provider, :model, :source_code, :total_tokens, keyword_init: true)
+    Response = Struct.new(:provider, :model, :source_code, :duration_seconds, :total_tokens, keyword_init: true)
 
     class OpenAI
       def initialize(**args)
@@ -33,9 +33,12 @@ class LLMed
           end
         end
 
+        start = Time.now
         llm_response = @llm.chat(messages: messages)
+        stop = Time.now
         Response.new({ provider: :openai,
                        model: @llm.chat_parameters[:model],
+                       duration_seconds: stop.to_i - start.to_i,
                        source_code: source_code(llm_response.chat_completion),
                        total_tokens: llm_response.total_tokens })
       end
@@ -57,6 +60,7 @@ class LLMed
 
         Response.new({ provider: :test,
                        model: 'test',
+                       duration_seconds: 0,
                        source_code: @output,
                        total_tokens: 0 })
       end

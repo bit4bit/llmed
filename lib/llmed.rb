@@ -189,7 +189,8 @@ You must only modify the following source code:
           provider: response.provider,
           model: response.model,
           release: @release,
-          total_tokens: response.total_tokens
+          total_tokens: response.total_tokens,
+          duration_seconds: response.duration_seconds
         }
         file.puts stat.to_json
       end
@@ -226,11 +227,7 @@ You must only modify the following source code:
 
   def compile(output_dir:, release_dir: nil)
     @applications.each do |app|
-      app.notify('COMPILE START')
-      _, elapsed_seconds = measure do
-        compile_application(app, output_dir, release_dir)
-      end
-      app.notify("COMPILE DONE #{elapsed_seconds}")
+      compile_application(app, output_dir, release_dir)
     end
   end
 
@@ -239,6 +236,7 @@ You must only modify the following source code:
   def compile_application(app, output_dir, release_dir)
     release_dir ||= output_dir
 
+    app.notify('COMPILE START')
     @logger.info("APPLICATION #{app.name} COMPILING")
 
     llm = @configuration.llm
@@ -258,6 +256,7 @@ You must only modify the following source code:
     @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
     write_output(app, output_dir, llm_response.source_code)
     write_statistics(app, release_dir, llm_response)
+    app.notify("COMPILE DONE #{llm_response.duration_seconds}")
   end
 
   def write_statistics(app, release_dir, response)
@@ -268,13 +267,6 @@ You must only modify the following source code:
     app.output_file(output_dir) do |file|
       file.write(output)
     end
-  end
-
-  def measure
-    start = Time.now
-    result = yield
-    stop = Time.now
-    [result, stop - start]
   end
 end
 
