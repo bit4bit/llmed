@@ -3,6 +3,7 @@
 
 require 'pp'
 require 'csv'
+require 'digest'
 require 'json'
 require 'pathname'
 require 'fileutils'
@@ -24,8 +25,16 @@ class LLMed
       @skip
     end
 
+    def same_digest?(val)
+      digest == val
+    end
+
+    def digest
+      Digest::SHA256.hexdigest "#{@name}.#{@message}"
+    end
+
     def message
-      "# #{@name}\n\n#{@message}"
+      "# Context: #{@name} Digest: #{digest}\n\n#{@message}"
     end
 
     def llm(message)
@@ -67,11 +76,18 @@ Always include the properly escaped comment: LLMED-COMPILED.
 You must only modify the following source code:
 {source_code}
 
-", input_variables: %w[language source_code])
+Only generate source code of the context who digest belongs to {update_context_digests}.
+
+Wrap with comment every code that belongs to the indicated context, example in ruby:
+#<llmed-code context='context name' digest='....'>
+...
+#</llmed-code>
+
+", input_variables: %w[language source_code update_context_digests])
     end
 
-    def prompt(language:, source_code:)
-      @prompt.format(language: language, source_code: source_code)
+    def prompt(language:, source_code:, update_context_digests: [])
+      @prompt.format(language: language, source_code: source_code, update_context_digests: update_context_digests.join(','))
     end
 
     # Change the default prompt, input variables: language, source_code
@@ -164,6 +180,13 @@ You must only modify the following source code:
       File.read(release_source_code)
     end
 
+    def release_contexts(output_dir, release_dir)
+      return {} unless @release
+      release_source_code = Pathname.new(release_dir) + "#{@output_file}.r#{@release}#{@language}.cache"
+      return {} if !File.exist?(release_source_code)
+      File.read(release_source_code).scan(/context='(.+)' digest='(.+)'/).to_h
+    end
+
     def output_file(output_dir, mode = 'w', &block)
       if @output_file.respond_to? :write
         yield @output_file
@@ -175,6 +198,22 @@ You must only modify the following source code:
 
         File.open(path, mode, &block)
       end
+    end
+
+    def digests_of_context_to_update(output_dir, release_dir)
+      update_context_digest = []
+      release_contexts = release_contexts(output_dir, release_dir)
+      unless release_contexts.empty?
+        @contexts.each do |ctx|
+          release_context_digest = release_contexts[ctx.name]
+          if !ctx.same_digest?(release_context_digest)
+            update_context_digest << release_context_digest
+            @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{ctx.name}")
+          end
+        end
+      end
+
+      update_context_digest
     end
 
     def write_statistics(release_dir, response)
@@ -240,12 +279,15 @@ You must only modify the following source code:
     @logger.info("APPLICATION #{app.name} COMPILING")
 
     llm = @configuration.llm
+
+    app.evaluate
+
     system_content = @configuration.prompt(language: app.language,
                                            source_code: app.source_code(
                                              output_dir, release_dir
-                                           ))
+                                           ),
+                                           update_context_digests: app.digests_of_context_to_update(output_dir, release_dir))
     messages = [LLMed::LLM::Message::System.new(system_content)]
-    app.evaluate
     app.contexts.each do |ctx|
       next if ctx.skip?
 
