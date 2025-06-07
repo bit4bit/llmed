@@ -7,9 +7,9 @@ require 'stringio'
 require 'json'
 
 describe LLMed do
-  before(:each) do
+  before do
     logger = Logger.new(STDOUT)
-    @llmed = LLMed.new(logger: logger)
+    @llmed = LLMed.new(logger: logger, output_dir: '/tmp', release_dir: '/tmp')
   end
 
   it 'configuration' do
@@ -23,7 +23,7 @@ describe LLMed do
     @llmed.set_llm(provider: :test, api_key: '', model: '')
     @llmed.set_prompt(file: './spec/external_prompt.pllmed')
     @llmed.application('demo', output_file: output) {}
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(output.string).to including('LLMED external prompt')
   end
@@ -33,9 +33,9 @@ describe LLMed do
     @llmed.set_language 'ruby'
     fake = StringIO.new
     @llmed.application 'demo', output_file: fake do
-      context('main', skip: true) { from_file('./spec/hiworld.cllmed') }
+      context('main', :skip) { from_file('./spec/hiworld.cllmed') }
     end
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(fake.string).not_to including('hola mundo')
   end
@@ -48,16 +48,16 @@ describe LLMed do
     @llmed.application 'demo', output_file: output_file do
       context('main') { from_file('./spec/hiworld.cllmed') }
     end
-    @llmed.compile(output_dir: '')
+    @llmed.compile
 
     expect(File.read(output_file)).to including("puts 'hola mundo'")
     stats = JSON.load(File.open(output_stats))
 
     expect(stats).to include(
-                       'provider' => 'openai',
-                       'model' => 'gpt-4o-mini',
-                       'release' => nil
-                     )
+      'provider' => 'openai',
+      'model' => 'gpt-4o-mini',
+      'release' => nil
+    )
     expect(stats['duration_seconds']).to be > 0
   end
 
@@ -68,7 +68,7 @@ describe LLMed do
     @llmed.application 'demo', output_file: fake do
       context('main') { from_file('./spec/hiworld.cllmed') }
     end
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(fake.string).to including("puts 'hola mundo'")
   end
@@ -83,15 +83,15 @@ describe LLMed do
     @llmed.application 'demo', output_file: output_file do
       context('main') { "Show to the user 'hola mundo'" }
     end
-    @llmed.compile(output_dir: '')
+    @llmed.compile
 
     # once agree create release
     @llmed.application 'demo', release: 1, output_file: output_file do
       context('main') { "Show to the user 'hola mundo'" }
     end
-    @llmed.compile(output_dir: '')
+    @llmed.compile
 
-    expect(File.exists?(release_file))
+    expect(File.exist?(release_file))
     expect(File.read(release_file)).to including("puts 'hola mundo'")
   end
 
@@ -105,21 +105,21 @@ describe LLMed do
       context 'main' do
         llm <<-LLM
         Imprimir mensaje 'hola mundo'.
-          LLM
+        LLM
       end
     end
 
     @llmed.application 'demo', output_file: tempfile_bye do
-      context('main') { from_source_code(tempfile) }
+      context('source main') { from_source_code(tempfile) }
 
       context('adicionar despedida') do
         <<-LLM
-          Adicionar mensaje de despedida 'bye mundo'.
-          LLM
+        Adicionar imprimir mensaje 'bye mundo'.
+        LLM
       end
     end
 
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(File.read(tempfile_bye)).to including("puts 'hola mundo'")
     expect(File.read(tempfile_bye)).to including("puts 'bye mundo'")
@@ -133,7 +133,7 @@ describe LLMed do
       context('main') { from_file('./spec/hiworld.cllmed') }
     end
 
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(File.read(tempfile)).to including("puts 'hola mundo'")
   end
@@ -146,10 +146,10 @@ describe LLMed do
       context 'main' do
         llm <<-LLM
         Codigo que imprima 'hola mundo'.
-          LLM
+        LLM
       end
     end
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(File.read(tempfile)).to including("puts 'hola mundo'")
   end
@@ -161,10 +161,10 @@ describe LLMed do
       context 'main' do
         llm <<-LLM
         Codigo que imprima 'hola mundo'.
-          LLM
+        LLM
       end
     end
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(File.read(tempfile)).to including("puts 'hola mundo'")
   end
@@ -180,9 +180,9 @@ describe LLMed do
         LLM
       end
     end
-      SOURCE
+    SOURCE
 
-    @llmed.compile(output_dir: '/tmp')
+    @llmed.compile
 
     expect(File.read(tempfile)).to including("puts 'hola mundo'")
   end
@@ -208,7 +208,7 @@ describe LLMed do
         end
       end
 
-      @llmed.compile(output_dir: '/tmp')
+      @llmed.compile
 
       expect(File.read(tempfile_ruby)).to including("puts 'hola mundo'")
       expect(File.read(tempfile_python)).to including("print('hola mundo')")

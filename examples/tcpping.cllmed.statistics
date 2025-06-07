@@ -9,3 +9,8 @@
 {"inserted_at":1749308428,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":688,"duration_seconds":8}
 {"inserted_at":1749308459,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":612,"duration_seconds":4}
 {"inserted_at":1749308494,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":649,"duration_seconds":6}
+{"inserted_at":1749308593,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":758,"duration_seconds":7}
+{"inserted_at":1749308643,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":778,"duration_seconds":7}
+{"inserted_at":1749308677,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":746,"duration_seconds":6}
+{"inserted_at":1749308709,"name":"TCP Ping","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":744,"duration_seconds":7}
+{"inserted_at":1749308755,"name":"TCP Ping","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":674,"duration_seconds":9}

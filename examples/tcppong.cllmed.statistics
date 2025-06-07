@@ -2,3 +2,8 @@
 {"inserted_at":1749307953,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":836,"duration_seconds":6}
 {"inserted_at":1749307986,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":846,"duration_seconds":7}
 {"inserted_at":1749308501,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":840,"duration_seconds":7}
+{"inserted_at":1749308601,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":877,"duration_seconds":8}
+{"inserted_at":1749308650,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":897,"duration_seconds":7}
+{"inserted_at":1749308683,"name":"TCP Pong","provider":"openai","model":"gpt-4o","release":null,"total_tokens":882,"duration_seconds":6}
+{"inserted_at":1749308719,"name":"TCP Pong","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":874,"duration_seconds":10}
+{"inserted_at":1749308763,"name":"TCP Pong","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":874,"duration_seconds":8}

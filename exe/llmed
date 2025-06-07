@@ -52,6 +52,6 @@ if ARGF.respond_to?(:path)
   release_dir = File.dirname(ARGF.path)
 end
 
-llmed = LLMed.new(logger: logger)
+llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
 llmed.eval_source source_code
-llmed.compile(output_dir: output_dir, release_dir: release_dir)
+llmed.compile()
