@@ -3,6 +3,7 @@
 
 require 'pp'
 require 'csv'
+require 'json'
 require 'pathname'
 require 'fileutils'
 require 'forwardable'
@@ -176,14 +177,21 @@ You must only modify the following source code:
       end
     end
 
-    def write_statistics(release_dir, total_tokens)
+    def write_statistics(release_dir, response)
       return unless @output_file.is_a?(String)
 
       statistics_file = Pathname.new(release_dir) + "#{@output_file}.statistics"
 
       File.open(statistics_file, 'a') do |file|
-        csv = CSV.new(file)
-        csv << [Time.now.to_i, @name, @release, total_tokens]
+        stat = {
+          inserted_at: Time.now.to_i,
+          name: @name,
+          provider: response.provider,
+          model: response.model,
+          release: @release,
+          total_tokens: response.total_tokens
+        }
+        file << stat.to_json
       end
       @logger.info("APPLICATION #{@name} WROTE STATISTICS FILE #{statistics_file}")
     end
@@ -217,13 +225,13 @@ You must only modify the following source code:
   end
 
   def compile(output_dir:, release_dir: nil)
-    @applications.each { |app|
-      app.notify("COMPILE START")
+    @applications.each do |app|
+      app.notify('COMPILE START')
       _, elapsed_seconds = measure do
         compile_application(app, output_dir, release_dir)
       end
       app.notify("COMPILE DONE #{elapsed_seconds}")
-    }
+    end
   end
 
   private
@@ -247,19 +255,13 @@ You must only modify the following source code:
     end
 
     llm_response = llm.chat(messages: messages)
-    response = llm_response.source_code
     @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
-    write_output(app, output_dir, source_code(response))
+    write_output(app, output_dir, llm_response.source_code)
     write_statistics(app, release_dir, llm_response)
   end
 
-  def source_code(content)
-    # TODO: by provider?
-    content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|perl|bash|c(pp)?)/, '')
-  end
-
   def write_statistics(app, release_dir, response)
-    app.write_statistics(release_dir, response.total_tokens)
+    app.write_statistics(release_dir, response)
   end
 
   def write_output(app, output_dir, output)

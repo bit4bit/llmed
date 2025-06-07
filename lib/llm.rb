@@ -16,20 +16,7 @@ class LLMed
       end
     end
 
-    class Response
-      def initialize(response, tokens)
-        @response = response
-        @tokens = tokens
-      end
-
-      def source_code
-        @response
-      end
-
-      def total_tokens
-        @tokens
-      end
-    end
+    Response = Struct.new(:provider, :model, :source_code, :total_tokens, keyword_init: true)
 
     class OpenAI
       def initialize(**args)
@@ -47,7 +34,16 @@ class LLMed
         end
 
         llm_response = @llm.chat(messages: messages)
-        Response.new(llm_response.chat_completion, llm_response.total_tokens)
+        Response.new({ provider: :openai,
+                       model: @llm.chat_parameters[:model],
+                       source_code: source_code(llm_response.chat_completion),
+                       total_tokens: llm_response.total_tokens })
+      end
+
+      private
+
+      def source_code(content)
+        content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|perl|bash|c(pp)?)/, '')
       end
     end
 
@@ -59,7 +55,10 @@ class LLMed
       def chat(messages: [])
         @output = messages.map { |m| m[:content] }.join("\n")
 
-        Response.new(@output, 0)
+        Response.new({ provider: :test,
+                       model: 'test',
+                       source_code: @output,
+                       total_tokens: 0 })
       end
     end
   end
