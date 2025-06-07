@@ -1,0 +1,29 @@
+
+require 'socket'
+
+#<llmed-code context='logging' digest='d6d3bda54167f997efce6b5bca6915ef8fc2a37a9c7acbe6b32fc8ff0e7b5155'>
+def log_connection_info(host, port)
+  puts "Connecting to #{host} on port #{port}..."
+end
+#</llmed-code>
+
+#<llmed-code context='main' digest='70a57dca56cc535061fe546b421eec2d3450c1613754c3398051750e18e2a1dd'>
+host = 'localhost'
+port = 8500
+
+log_connection_info(host, port)
+
+begin
+  socket = TCPSocket.open(host, port)
+  #<llmed-code context='logic' digest='6309ecb4ef254a49424d0bd7fe3a28be185431f335eded9ce3066a0cf7f92d17'>
+  loop do
+    socket.puts 'ping'
+    response = socket.gets.chomp
+    break unless response == 'pong'
+  end
+  #</llmed-code>
+ensure
+  socket.close if socket
+end
+#</llmed-code>
+# LLMED-COMPILED

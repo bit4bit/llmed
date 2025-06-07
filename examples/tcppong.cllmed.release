@@ -1,0 +1,50 @@
+
+#<llmed-code context='logic' digest='7e262f1d5c2651af391a0f92c9950df3cb1522cb99febe8fa9a49de2379de7f4'>
+import socket
+import threading
+
+class TCPServer:
+    def __init__(self, host='localhost', port=8500):
+        self.host = host
+        self.port = port
+        self.ping_count = 0
+        self.lock = threading.Lock()
+
+    def handle_client(self, client_socket):
+        try:
+            while True:
+                request = client_socket.recv(1024).decode('utf-8')
+                if request.strip().lower() == 'ping':
+                    with self.lock:
+                        self.ping_count += 1
+                        print(f"'ping' received. Total count: {self.ping_count}")
+                    client_socket.send("pong\n".encode('utf-8'))
+                else:
+                    break
+        finally:
+            client_socket.close()
+
+    def start(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((self.host, self.port))
+        server.listen(5)
+        print(f"[*] Listening on {self.host}:{self.port}")
+
+        while True:
+            client_socket, addr = server.accept()
+            print(f"[*] Accepted connection from {addr}")
+            client_handler = threading.Thread(target=self.handle_client, args=(client_socket,))
+            client_handler.start()
+
+#</llmed-code>
+
+#<llmed-code context='main' digest='72f06af4faf2652dd12e55f6e932693aec876059bdc16590f29c7fb90bfb2935'>
+if __name__ == "__main__":
+    server = TCPServer('localhost', 8500)
+    server.start()
+#</llmed-code>
+
+#<llmed-code context='logging' digest='5c9a2e230838338f4eea32c69fdc159455f32b10b84fc362a2e0ad7fa651e3e2'>
+    print("Server is running. You can connect using the following command:")
+    print("telnet localhost 8500")
+#</llmed-code>
