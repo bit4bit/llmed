@@ -69,7 +69,7 @@ class LLMed
     def patch_or_create(output)
       output_content = output
 
-      if @release && File.exist?(release_source_code)
+      if @release && File.exist?(release_source_code) && !release_contexts.empty?
         release_source_code_content = File.read(release_source_code)
         output_contexts = output.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'>(.+?)</llmed-code>}im)
 
