@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "langchainrb", "~> 0.19.5"
   s.add_dependency "ruby-openai", "~> 8.1"
+  s.add_dependency "notify", "~> 0.5.2"
 
   s.add_development_dependency 'rspec', "~> 3.13"
   s.add_development_dependency 'rubocop', "~> 1.75"

@@ -35,6 +35,7 @@ GEM
     multipart-post (2.4.1)
     net-http (0.6.0)
       uri
+    notify (0.5.2)
     parallel (1.27.0)
     parser (3.3.8.0)
       ast (~> 2.4.1)
@@ -91,6 +92,7 @@ PLATFORMS
 
 DEPENDENCIES
   langchainrb (~> 0.19.5)
+  notify (~> 0.5.2)
   rspec
   rubocop
   rubocop-rspec

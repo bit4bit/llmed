@@ -6,6 +6,7 @@ require 'csv'
 require 'pathname'
 require 'fileutils'
 require 'forwardable'
+require 'notify'
 
 class LLMed
   extend Forwardable
@@ -186,6 +187,10 @@ You must only modify the following source code:
       end
       @logger.info("APPLICATION #{@name} WROTE STATISTICS FILE #{statistics_file}")
     end
+
+    def notify(message)
+      Notify.notify("APPLICATION #{@name}", message)
+    end
   end
 
   def initialize(logger:)
@@ -212,7 +217,12 @@ You must only modify the following source code:
   end
 
   def compile(output_dir:, release_dir: nil)
-    @applications.each { |app| compile_application(app, output_dir, release_dir) }
+    @applications.each { |app|
+      _, elapsed_seconds = measure do
+        compile_application(app, output_dir, release_dir)
+      end
+      app.notify("COMPILE DONE #{elapsed_seconds}")
+    }
   end
 
   private
@@ -255,6 +265,13 @@ You must only modify the following source code:
     app.output_file(output_dir) do |file|
       file.write(output)
     end
+  end
+
+  def measure
+    start = Time.now
+    result = yield
+    stop = Time.now
+    [result, stop - start]
   end
 end
 
