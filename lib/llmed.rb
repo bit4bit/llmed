@@ -191,7 +191,7 @@ You must only modify the following source code:
           release: @release,
           total_tokens: response.total_tokens
         }
-        file << stat.to_json
+        file.puts stat.to_json
       end
       @logger.info("APPLICATION #{@name} WROTE STATISTICS FILE #{statistics_file}")
     end
