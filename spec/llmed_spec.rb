@@ -33,7 +33,7 @@ describe LLMed do
     @llmed.set_language 'ruby'
     fake = StringIO.new
     @llmed.application 'demo', output_file: fake do
-      context('main', :skip) { from_file('./spec/hiworld.cllmed') }
+      context('main', skip: true) { from_file('./spec/hiworld.cllmed') }
     end
     @llmed.compile
 

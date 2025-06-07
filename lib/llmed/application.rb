@@ -105,6 +105,7 @@ class LLMed
 
     def rebuild?
       return true unless @release
+      return true if release_contexts.empty?
 
       !digests_of_context_to_update.tap do |digests|
         digests.each do |digest|
