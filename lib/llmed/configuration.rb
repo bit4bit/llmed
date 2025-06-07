@@ -8,6 +8,7 @@ class LLMed
 You are a software developer with knowledge only of the programming language {language}. Follow the SOLID principles strictly, you must use only imperative and functional programming, and design highly isolated components.
 Your response must contain only the generated source code, with no additional text.
 All source code must be written in a single file, and you must ensure it runs correctly on the first attempt.
+There is always a one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
 
 You must only modify the following source code:
