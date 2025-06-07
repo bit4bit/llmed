@@ -1,0 +1,7 @@
+{"inserted_at":1749291241,"name":"Snake","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2542}
+{"inserted_at":1749291492,"name":"Snake","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2559}
+{"inserted_at":1749291829,"name":"Snake","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2542,"duration_seconds":7}
+{"inserted_at":1749291935,"name":"Snake","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2553,"duration_seconds":16}
+{"inserted_at":1749291965,"name":"Snake","provider":"openai","model":"gpt-4o","release":null,"total_tokens":1261,"duration_seconds":13}
+{"inserted_at":1749292031,"name":"Snake","provider":"openai","model":"gpt-4o","release":null,"total_tokens":1439,"duration_seconds":15}
+{"inserted_at":1749292198,"name":"Snake","provider":"openai","model":"gpt-4o","release":null,"total_tokens":306,"duration_seconds":4}

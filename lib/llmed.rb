@@ -231,16 +231,38 @@ Wrap with comment every code that belongs to the indicated context, example in r
       update_context_digest = []
       release_contexts = release_contexts(output_dir, release_dir)
       unless release_contexts.empty?
+        # rebuild context from top to down
+        # we are expecting:
+        # - top the most stable concepts
+        # - buttom the most inestable concepts
+        update_rest = false
         @contexts.each do |ctx|
           release_context_digest = release_contexts[ctx.name]
-          unless ctx.same_digest?(release_context_digest)
+          if update_rest
             update_context_digest << release_context_digest
-            @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{ctx.name}")
+            next
           end
+          next if ctx.same_digest?(release_context_digest)
+
+          update_rest = true
+          update_context_digest << release_context_digest
         end
       end
 
       update_context_digest
+    end
+
+    def rebuild?(output_dir, release_dir)
+      return true unless @release
+
+      update_context_digest = digests_of_context_to_update(output_dir, release_dir)
+      release_contexts = release_contexts(output_dir, release_dir)
+      update_context_digest.each do |digest|
+        context_by_digest = release_contexts.invert
+        @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")
+      end
+
+      !update_context_digest.empty?
     end
 
     def write_statistics(release_dir, response)
@@ -321,12 +343,15 @@ Wrap with comment every code that belongs to the indicated context, example in r
 
       messages << LLMed::LLM::Message::User.new(ctx.message)
     end
-
-    llm_response = llm.chat(messages: messages)
-    @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
-    write_output(app, output_dir, release_dir, llm_response.source_code)
-    write_statistics(app, release_dir, llm_response)
-    app.notify("COMPILE DONE #{llm_response.duration_seconds}")
+    if app.rebuild?(output_dir, release_dir)
+      llm_response = llm.chat(messages: messages)
+      @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
+      write_output(app, output_dir, release_dir, llm_response.source_code)
+      write_statistics(app, release_dir, llm_response)
+      app.notify("COMPILE DONE #{llm_response.duration_seconds}")
+    else
+      @logger.info("APPLICATION #{app.name} NOT CHANGES DETECTED")
+    end
   end
 
   def write_statistics(app, release_dir, response)

@@ -14,12 +14,20 @@ What would happen if:
 In classic terms the LLM is the Compiler, Source Code is the Binary, the Programming language is Context Description.
 
 ```ruby
-set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
-application "hi world", language: '<HERE LANGUAGE>', release: <NUMBER>, output_file: "<HERE NAME>.ollmed" do
+application "hola mundo ruby", language: :ruby, output_file: "holamundo-ruby.ollmed" do
+  # More stable context: if this changes, all subsequent context will be recompiled.
+  context "variables" do
+    <<-LLM
+    Variable saludos de valor 'hola mundo'.
+    LLM
+  end
+
+  # More inestable context: if this changes, only this context will be recompiled.
   context "main" do
     <<-LLM
-        Show to user 'hi world!'.
+    Mostrar al usuario la variable saludos.
     LLM
   end
 end
