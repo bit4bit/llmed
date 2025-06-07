@@ -1,0 +1,6 @@
+{"inserted_at":1749304232,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":572,"duration_seconds":5}
+{"inserted_at":1749304273,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":584,"duration_seconds":8}
+{"inserted_at":1749304297,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":569,"duration_seconds":8}
+{"inserted_at":1749304327,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":901,"duration_seconds":6}
+{"inserted_at":1749304341,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":901,"duration_seconds":9}
+{"inserted_at":1749304642,"name":"WEB Counter","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":903,"duration_seconds":6}

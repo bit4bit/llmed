@@ -1,0 +1,111 @@
+
+#<llmed-code context='dependencies' digest='b8d085c07feea3fa6104e7b7f093cab1f0f4967835bba88144fcc28e91746909'>
+require 'gtk3'
+#</llmed-code>
+
+#<llmed-code context='UI layout' digest='c6b24c5543d3b59d23000fe23d9a0907633bdd4f4bd29f56788b05805be356a1'>
+class TextEditor
+  def initialize
+    @window = Gtk::Window.new("Text Editor")
+    @window.set_size_request(600, 400)
+
+    @vbox = Gtk::Box.new(:vertical, 5)
+    @window.add(@vbox)
+
+    create_menu
+    create_input_area
+
+    @window.signal_connect("destroy") { Gtk.main_quit }
+    @window.show_all
+  end
+
+  def create_menu
+    menubar = Gtk::MenuBar.new
+
+    file_menu = Gtk::Menu.new
+    file_item = Gtk::MenuItem.new("File")
+    new_item = Gtk::MenuItem.new("New")
+    new_item.signal_connect("activate") { clear_input_area }
+    file_menu.append(new_item)
+    
+    open_item = Gtk::MenuItem.new("Open")
+    open_item.signal_connect("activate") { open_file }
+    file_menu.append(open_item)
+
+    save_item = Gtk::MenuItem.new("Save")
+    save_item.signal_connect("activate") { save_file }
+    file_menu.append(save_item)
+
+    file_item.set_submenu(file_menu)
+    menubar.append(file_item)
+
+    view_menu = Gtk::Menu.new
+    view_item = Gtk::MenuItem.new("View")
+    font_size_menu = Gtk::Menu.new
+    [12, 15, 20, 25].each do |size|
+      font_size_item = Gtk::MenuItem.new(size.to_s)
+      font_size_item.signal_connect("activate") { change_font_size(size) }
+      font_size_menu.append(font_size_item)
+    end
+    view_item.set_submenu(font_size_menu)
+    menubar.append(view_item)
+
+    about_item = Gtk::MenuItem.new("About")
+    about_item.signal_connect("activate") { show_about_message }
+    menubar.append(about_item)
+
+    @vbox.pack_start(menubar, false, false, 0)
+  end
+
+  def create_input_area
+    @text_area = Gtk::TextView.new
+    @vbox.pack_start(@text_area, true, true, 0)
+  end
+
+  def clear_input_area
+    @text_area.buffer.text = ""
+  end
+
+  def change_font_size(size)
+    @text_area.override_font(Pango::FontDescription.new("#{size}"))
+  end
+
+  def show_about_message
+    dialog = Gtk::MessageDialog.new(@window, Gtk::Dialog::DESTROY_WITH_PARENT, Gtk::MessageDialog::INFO, Gtk::MessageDialog::BUTTONS_OK, "Compiled with LLMed\nhttps://github.com/bit4bit/llm-labs")
+    dialog.run
+    dialog.destroy
+  end
+
+  def open_file
+    dialog = Gtk::FileChooserDialog.new(title: "Open File", parent: @window, action: Gtk::FileChooser::ACTION_OPEN)
+    dialog.add_buttons([Gtk::Stock::OPEN, Gtk::ResponseType::ACCEPT], [Gtk::Stock::CANCEL, Gtk::ResponseType::CANCEL])
+    
+    if dialog.run == Gtk::ResponseType::ACCEPT
+      filename = dialog.filename
+      @text_area.buffer.text = File.read(filename)
+    end
+
+    dialog.destroy
+  end
+
+  def save_file
+    dialog = Gtk::FileChooserDialog.new(title: "Save File", parent: @window, action: Gtk::FileChooser::ACTION_SAVE)
+    dialog.add_buttons([Gtk::Stock::SAVE, Gtk::ResponseType::ACCEPT], [Gtk::Stock::CANCEL, Gtk::ResponseType::CANCEL])
+
+    if dialog.run == Gtk::ResponseType::ACCEPT
+      filename = dialog.filename
+      File.write(filename, @text_area.buffer.text)
+    end
+
+    dialog.destroy
+  end
+end
+
+Gtk.init
+TextEditor.new
+Gtk.main
+#</llmed-code>
+
+#<llmed-code context='application' digest='aa83521d7876a9a9d98c028e6b026a3cbbbaeac57b6933514ce11ee76745ef60'>
+# The application code is integrated within the TextEditor class above.
+#</llmed-code>

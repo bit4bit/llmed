@@ -1,11 +1,11 @@
 # -*- mode: ruby -*-
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
-application "hola mundo ruby", language: 'ruby', output_file: "holamundo-ruby.ollmed" do
+application "hola mundo ruby", release: 3, language: 'ruby', output_file: "holamundo-ruby.ollmed" do
   # More stable context: if this changes, all subsequent context will be recompiled.
   context "variables" do
     <<-LLM
-    Variable saludos de valor 'hola mundo'.
+    Variable saludos de valor 'hola mundoa'.
     LLM
   end
 
@@ -17,16 +17,16 @@ application "hola mundo ruby", language: 'ruby', output_file: "holamundo-ruby.ol
   end
 end
 
-application "hola mundo python", language: 'python', output_file: "holamundo-python.ollmed" do
-  context "variables" do
-    <<-LLM
-    Variable saludos de valor 'hola mundo'.
-    LLM
-  end
+# application "hola mundo python", language: 'python', output_file: "holamundo-python.ollmed" do
+#   context "variables" do
+#     <<-LLM
+#     Variable saludos de valor 'hola mundo'.
+#     LLM
+#   end
 
-  context "main" do
-    <<-LLM
-    Mostrar al usuario la variable saludos.
-    LLM
-  end
-end
+#   context "main" do
+#     <<-LLM
+#     Mostrar al usuario la variable saludos.
+#     LLM
+#   end
+# end

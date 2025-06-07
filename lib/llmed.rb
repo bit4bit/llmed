@@ -209,11 +209,20 @@ Wrap with comment every code that belongs to the indicated context, example in r
       if @release && File.exist?(release_source_code_path)
         release_source_code = File.read(release_source_code_path)
         output_contexts = output.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'>(.+?)</llmed-code>}im)
+
         output_contexts.each do |match|
           name, digest, new_code = match
-          @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name}")
+          new_digest = digest
+          @contexts.each do |ctx|
+            if ctx.name == name
+              new_digest = ctx.digest
+              break
+            end
+          end
+
+          @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name} \n\tFROM #{digest}\n\tTO DIGEST #{new_digest}")
           release_source_code = release_source_code.sub(%r{(.*?)(<llmed-code context='#{name}' digest='.*?'>)(.+?)(</llmed-code>)(.*?)}m) do
-            "#{::Regexp.last_match(1)}<llmed-code context='#{name}' digest='#{digest}'>#{new_code}#{::Regexp.last_match(4)}#{::Regexp.last_match(5)}"
+            "#{::Regexp.last_match(1)}<llmed-code context='#{name}' digest='#{new_digest}'>#{new_code}#{::Regexp.last_match(4)}#{::Regexp.last_match(5)}"
           end
         end
 
@@ -239,7 +248,6 @@ Wrap with comment every code that belongs to the indicated context, example in r
         update_rest = false
         @contexts.each do |ctx|
           release_context_digest = release_contexts[ctx.name]
-
           # maybe the context is not connected to the source code
           next if release_context_digest.nil?
 
