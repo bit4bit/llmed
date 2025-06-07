@@ -218,6 +218,7 @@ You must only modify the following source code:
 
   def compile(output_dir:, release_dir: nil)
     @applications.each { |app|
+      app.notify("COMPILE START")
       _, elapsed_seconds = measure do
         compile_application(app, output_dir, release_dir)
       end
