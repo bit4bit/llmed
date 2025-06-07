@@ -230,6 +230,7 @@ Wrap with comment every code that belongs to the indicated context, example in r
     def digests_of_context_to_update(output_dir, release_dir)
       update_context_digest = []
       release_contexts = release_contexts(output_dir, release_dir)
+
       unless release_contexts.empty?
         # rebuild context from top to down
         # we are expecting:
@@ -238,6 +239,10 @@ Wrap with comment every code that belongs to the indicated context, example in r
         update_rest = false
         @contexts.each do |ctx|
           release_context_digest = release_contexts[ctx.name]
+
+          # maybe the context is not connected to the source code
+          next if release_context_digest.nil?
+
           if update_rest
             update_context_digest << release_context_digest
             next
