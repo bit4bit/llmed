@@ -1,10 +1,11 @@
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
 set_language :ruby
 
-application "TCP Ping", release: 2, language: :ruby, output_file: "tcpping.cllmed" do
+application "TCP Ping", release: nil, language: :ruby, output_file: "tcpping.cllmed" do
   context "logic" do
     <<-LLM
     TCP Client after connection send 'ping' and wait for 'pong' for sending again 'ping'.
+
     LLM
   end
 
@@ -21,7 +22,7 @@ application "TCP Ping", release: 2, language: :ruby, output_file: "tcpping.cllme
   end
 end
 
-application "TCP Pong", release: 1, language: :python, output_file: "tcppong.cllmed" do
+application "TCP Pong", release: nil, language: :python, output_file: "tcppong.cllmed" do
   context "logic" do
     <<-LLM
     TCP Server must wait for 'ping' after respond 'pong' and wait again 'ping'.

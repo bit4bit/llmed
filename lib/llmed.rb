@@ -68,7 +68,7 @@ class LLMed
   class Configuration
     def initialize
       @prompt = LLMed::LLM::Template.build(template: "
-You are a software developer and only have knowledge of the programming language {language}.
+You are a software developer with knowledge only of the programming language {language}. Follow the SOLID principles strictly, use only imperative and functional programming, and design highly isolated components.
 Your response must contain only the generated source code, with no additional text.
 All source code must be written in a single file, and you must ensure it runs correctly on the first attempt.
 Always include the properly escaped comment: LLMED-COMPILED.

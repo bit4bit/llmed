@@ -1,3 +1,11 @@
 {"inserted_at":1749307863,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":616,"duration_seconds":7}
 {"inserted_at":1749307979,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":1,"total_tokens":1007,"duration_seconds":3}
 {"inserted_at":1749308015,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":1,"total_tokens":1007,"duration_seconds":2}
+{"inserted_at":1749308245,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":2,"total_tokens":1012,"duration_seconds":3}
+{"inserted_at":1749308292,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":2,"total_tokens":1007,"duration_seconds":2}
+{"inserted_at":1749308306,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":635,"duration_seconds":4}
+{"inserted_at":1749308349,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":636,"duration_seconds":4}
+{"inserted_at":1749308376,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":641,"duration_seconds":4}
+{"inserted_at":1749308428,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":688,"duration_seconds":8}
+{"inserted_at":1749308459,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":612,"duration_seconds":4}
+{"inserted_at":1749308494,"name":"TCP Ping","provider":"openai","model":"gpt-4o","release":null,"total_tokens":649,"duration_seconds":6}
