@@ -1,0 +1,35 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "MINI COUNTER", release: 2, language: :node, output_file: "minicounter.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    * Must use only the standard/native library.
+    * Must not use external dependencies.
+    LLM
+  end
+
+  context "API" do
+    <<-LLM
+    API Server listening port 3001.
+    Expose the following endpoints:
+    - GET /count
+      - return the latest count.
+    - POST /count
+      - increase the count by 1.
+    add CORS endpoints.
+    LLM
+  end
+end
+
+application "MINI COUNTER UI", release: 1, language: :html, output_file: "minicounterui.html" do
+  context("server api") { from_release("minicounter.ollmed.release") }
+  context "UI" do
+    <<-LLM
+    Use tailwind.
+    Base of server api is 'http://localhost:3001'.
+
+    Show the latest counter using the endpoint '/count'.
+    Has a button that calls '/count'..
+    LLM
+  end
+end

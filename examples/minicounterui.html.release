@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        // <llmed-code context='UI' digest='a51c8e7c6c7e4878fb37df25e270c94b2db7b218e278951a9a933966e4fcbaef'>
+        const apiBase = 'http://localhost:3001';
+        let count = 0;
+
+        const fetchCount = async () => {
+            const response = await fetch(`${apiBase}/count`);
+            const data = await response.json();
+            count = data.count;
+            document.getElementById('countDisplay').innerText = count;
+        };
+
+        const incrementCount = async () => {
+            await fetch(`${apiBase}/count`, { method: 'POST' });
+            fetchCount();
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCount();
+            document.getElementById('incrementButton').addEventListener('click', incrementCount);
+        });
+        // </llmed-code>
+    </script>
+</head>
+<body class="flex flex-col items-center justify-center h-screen bg-gray-100">
+    <h1 class="text-4xl font-bold mb-4">Counter: <span id="countDisplay" class="text-blue-600">0</span></h1>
+    <button id="incrementButton" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">Increment Count</button>
+</body>
+</html>
