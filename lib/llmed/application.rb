@@ -83,9 +83,17 @@ class LLMed
             end
           end
 
-          @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name} \n\tFROM #{digest}\n\tTO DIGEST #{new_digest}")
           release_source_code_content = release_source_code_content.sub(%r{(.*?)(<llmed-code context='#{name}' digest='.*?'>)(.+?)(</llmed-code>)(.*?)}m) do
             "#{::Regexp.last_match(1)}<llmed-code context='#{name}' digest='#{new_digest}'>#{new_code}#{::Regexp.last_match(4)}#{::Regexp.last_match(5)}"
+          end
+
+          if release_contexts[name].nil?
+            @logger.info("APPLICATION #{@name} ADDING NEW CONTEXT #{name}")
+            release_source_code_content += "<llmed-code context='#{name}' digest='#{new_digest}'>
+#{new_code}
+#{code_comment}</llmed-code>"
+          else
+            @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name} \n\tFROM #{digest}\n\tTO DIGEST #{new_digest}")
           end
         end
 
@@ -110,7 +118,11 @@ class LLMed
       !digests_of_context_to_update.tap do |digests|
         digests.each do |digest|
           context_by_digest = release_contexts.invert
-          @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")
+          if context_by_digest[digest].nil?
+            @logger.info("APPLICATION #{@name} ADDING CONTEXT #{user_contexts.invert[digest]}")
+          else
+            @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")
+          end
         end
       end.empty?
     end
@@ -141,6 +153,10 @@ class LLMed
 
     private
 
+    def code_comment
+      { ruby: '#' }.fetch(@language.to_sym)
+    end
+
     def digests_of_context_to_update
       update_context_digest = []
 
@@ -152,8 +168,15 @@ class LLMed
         update_rest = false
         @contexts.each do |ctx|
           release_context_digest = release_contexts[ctx.name]
-          # maybe the context is not connected to the source code
-          next if release_context_digest.nil?
+
+          # added new context
+          if release_context_digest.nil? and !user_contexts[ctx.name].nil?
+            update_context_digest << user_contexts[ctx.name]
+            next
+          elsif release_context_digest.nil?
+            # maybe the context is not connected to the source code
+            next
+          end
 
           if update_rest
             update_context_digest << release_context_digest
@@ -175,6 +198,12 @@ class LLMed
 
     def release_main_source_code
       Pathname.new(@release_dir) + "#{@output_file}.release"
+    end
+
+    def user_contexts
+      @contexts.map do |ctx|
+        [ctx.name, ctx.digest]
+      end.to_h
     end
 
     def release_contexts
