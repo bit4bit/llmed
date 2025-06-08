@@ -35,3 +35,8 @@
 {"inserted_at":1749306913,"name":"SIMPLE Editor","provider":"openai","model":"gpt-4o","release":2,"total_tokens":2479,"duration_seconds":8}
 {"inserted_at":1749306970,"name":"SIMPLE Editor","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2479,"duration_seconds":10}
 {"inserted_at":1749306981,"name":"SIMPLE Editor","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2479,"duration_seconds":9}
+{"inserted_at":1749378927,"name":"SIMPLE Editor","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2508,"duration_seconds":7}
+{"inserted_at":1749379147,"name":"SIMPLE Editor","provider":"openai","model":"gpt-4o","release":3,"total_tokens":2508,"duration_seconds":9}
+{"inserted_at":1749379780,"name":"SIMPLE Editor","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":3,"total_tokens":3094,"duration_seconds":15}
+{"inserted_at":1749379979,"name":"SIMPLE Editor","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":3,"total_tokens":3094,"duration_seconds":15}
+{"inserted_at":1749380044,"name":"SIMPLE Editor","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":3,"total_tokens":3094,"duration_seconds":15}
