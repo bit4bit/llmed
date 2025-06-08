@@ -1,0 +1,57 @@
+set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-haiku-20241022'
+
+application "laberinto", release: 3, language: 'ruby', output_file: "consola-laberinto.ollmed" do
+  context "Entidades" do
+    <<-LLM
+    Entidades:
+     - Laberinto
+     - Muros
+     - Jugador
+     - Salida
+
+    ## Laberinto
+     - Se genera de manera aleatoria usando los muros.
+     - Siempre tiene solucion.
+     - Siempre tiene una salida.
+     - Esta correctamente generado.
+
+    ## Jugador
+     - Se desplaza en el laberinto
+     - No puede atravesar muros
+
+    ## Salida
+     - Salida.
+    LLM
+  end
+
+  context "Logica" do
+    <<-LLM
+    El juego finaliza una vez el usuario llega a la salida o presionar la letra q.
+    
+    LLM
+  end
+
+  context "UI" do
+    <<-LLM
+    Interfaz del juego es terminal linux.
+    Solicitar al jugador las dimensiones del laberinto.
+
+    Representaciones:
+     - Muros se representan con #
+     - Jugador con @
+     - Caminos con .
+     - Salida con >
+
+    Control jugador:
+     - derecha con d
+     - arriba con w
+     - izquierda con a
+     - abajo con s
+
+    El movimiento del jugador es fluido.
+    Mostrar la cantidad de pasos realizados.
+    LLM
+  end
+
+
+end
