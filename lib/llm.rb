@@ -20,7 +20,7 @@ class LLMed
 
     class OpenAI
       def initialize(**args)
-        @llm = Langchain::LLM::OpenAI.new(**args)
+        @llm = Langchain::LLM::OpenAI.new(**llm_arguments(args))
       end
 
       def chat(messages: [])
@@ -36,7 +36,7 @@ class LLMed
         start = Time.now
         llm_response = @llm.chat(messages: messages)
         stop = Time.now
-        Response.new({ provider: :openai,
+        Response.new({ provider: provider,
                        model: @llm.chat_parameters[:model],
                        duration_seconds: stop.to_i - start.to_i,
                        source_code: source_code(llm_response.chat_completion),
@@ -45,8 +45,28 @@ class LLMed
 
       private
 
+      def llm_arguments(args)
+        args
+      end
+
+      def provider
+        :openai
+      end
+
       def source_code(content)
         content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|perl|bash|html|c(pp)?)/, '')
+      end
+    end
+
+    class Anthropic < OpenAI
+      private
+
+      def llm_arguments(args)
+        args.merge({ llm_options: { uri_base: 'https://api.anthropic.com/v1/' } })
+      end
+
+      def provider
+        :anthropic
       end
     end
 

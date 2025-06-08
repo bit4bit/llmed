@@ -66,6 +66,11 @@ Wrap with comment every code that belongs to the indicated context, example in r
           api_key: @provider_api_key,
           default_options: { temperature: 0.7, chat_model: @provider_model }
         )
+      when :anthropic
+        LLMed::LLM::Anthropic.new(
+          api_key: @provider_api_key,
+          default_options: { temperature: 0.7, chat_model: @provider_model }
+        )
       when :test
         LLMed::LLM::Test.new
       when nil
