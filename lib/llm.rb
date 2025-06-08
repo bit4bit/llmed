@@ -54,7 +54,7 @@ class LLMed
       end
 
       def source_code(content)
-        content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|perl|bash|html|c(pp)?)/, '')
+        content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|perl|bash|html|c(pp)?)([ \n])/, '')
       end
     end
 
