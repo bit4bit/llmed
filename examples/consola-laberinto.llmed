@@ -1,5 +1,7 @@
 set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-haiku-20241022'
 
+# TODO: estoy en un laberinto, como adicionar que solicite las dimensiones del mapa?
+# he intendado varias opciones pero no actualiza el codigo.
 application "laberinto", release: 3, language: 'ruby', output_file: "consola-laberinto.ollmed" do
   context "Entidades" do
     <<-LLM
