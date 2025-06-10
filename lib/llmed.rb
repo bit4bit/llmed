@@ -83,4 +83,5 @@ end
 require_relative 'llm'
 require_relative 'llmed/configuration'
 require_relative 'llmed/context'
+require_relative 'llmed/release'
 require_relative 'llmed/application'

@@ -70,34 +70,18 @@ class LLMed
       output_content = output
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
-        release_source_code_content = File.read(release_source_code)
-        output_contexts = output.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'>(.+?)</llmed-code>}im)
-
-        output_contexts.each do |match|
-          name, digest, new_code = match
-          new_digest = digest
-          @contexts.each do |ctx|
-            if ctx.name == name
-              new_digest = ctx.digest
-              break
-            end
-          end
-
-          release_source_code_content = release_source_code_content.sub(%r{(.*?)(<llmed-code context='#{name}' digest='.*?'>)(.+?)(</llmed-code>)(.*?)}m) do
-            "#{::Regexp.last_match(1)}<llmed-code context='#{name}' digest='#{new_digest}'>#{new_code}#{::Regexp.last_match(4)}#{::Regexp.last_match(5)}"
-          end
-
-          if release_contexts[name].nil?
-            @logger.info("APPLICATION #{@name} ADDING NEW CONTEXT #{name}")
-            release_source_code_content += "<llmed-code context='#{name}' digest='#{new_digest}'>
-#{new_code}
-#{code_comment}</llmed-code>"
-          else
-            @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{name} \n\tFROM #{digest}\n\tTO DIGEST #{new_digest}")
+        output_release = Release.load(File.read(release_source_code))
+        input_release = Release.load(File.read(output))
+        output_content = output_release.merge(input_release).content
+        output_release.changes do |change|
+          action, ctx = change
+          case action
+          when :added
+            @logger.info("APPLICATION #{@name} ADDING NEW CONTEXT #{ctx.name}")
+          when :updated
+            @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{ctx.name} TO DIGEST #{ctx.digest}")
           end
         end
-
-        output_content = release_source_code_content
       end
 
       output_file(@output_dir) do |file|
@@ -211,6 +195,7 @@ class LLMed
 
       return {} unless File.exist?(release_source_code)
 
+      Release.load(Fil.read(release_source_code))
       File.read(release_source_code).scan(/context='(.+)' digest='(.+)'/).to_h
     end
   end
