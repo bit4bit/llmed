@@ -71,8 +71,8 @@ class LLMed
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
         output_release = Release.load(File.read(release_source_code))
-        input_release = Release.load(File.read(output))
-        output_content = output_release.merge(input_release).content
+        input_release = Release.load(output)
+        output_content = output_release.merge!(input_release, code_comment).content
         output_release.changes do |change|
           action, ctx = change
           case action
@@ -138,38 +138,38 @@ class LLMed
     private
 
     def code_comment
-      { ruby: '#' }.fetch(@language.to_sym)
+      { ruby: '#', node: '//' }.fetch(@language.to_sym)
     end
 
     def digests_of_context_to_update
       update_context_digest = []
 
-      unless release_contexts.empty?
+      unless release_instance.empty?
         # rebuild context from top to down
         # we are expecting:
         # - top the most stable concepts
         # - buttom the most inestable concepts
         update_rest = false
         @contexts.each do |ctx|
-          release_context_digest = release_contexts[ctx.name]
+          release_context = release_instance.context_by(ctx.name)
 
           # added new context
-          if release_context_digest.nil? and !user_contexts[ctx.name].nil?
+          if !release_context.digest? and !user_contexts[ctx.name].nil?
             update_context_digest << user_contexts[ctx.name]
             next
-          elsif release_context_digest.nil?
+          elsif release_context.digest?
             # maybe the context is not connected to the source code
             next
           end
 
           if update_rest
-            update_context_digest << release_context_digest
+            update_context_digest << release_context.digest
             next
           end
-          next if ctx.same_digest?(release_context_digest)
+          next if ctx.same_digest?(release_context.digest)
 
           update_rest = true
-          update_context_digest << release_context_digest
+          update_context_digest << release_context.digest
         end
       end
 
@@ -195,8 +195,15 @@ class LLMed
 
       return {} unless File.exist?(release_source_code)
 
-      Release.load(Fil.read(release_source_code))
       File.read(release_source_code).scan(/context='(.+)' digest='(.+)'/).to_h
+    end
+
+    def release_instance
+      if File.exist?(release_source_code)
+        Release.load(File.read(release_source_code))
+      else
+        Release.empty
+      end
     end
   end
 end

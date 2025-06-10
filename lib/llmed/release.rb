@@ -3,13 +3,27 @@
 
 class LLMed
   class Release
-    ContextCode = Struct.new(:name, :digest, :code)
+    ContextCode = Struct.new(:name, :digest, :code) do
+      def digest?
+        return false if @digest.nil?
+
+        false if @digest.empty?
+      end
+    end
 
     def self.load(origin)
       new(origin)
     end
 
+    def self.empty
+      new('')
+    end
+
     attr_reader :content
+
+    def empty?
+      @origin.empty?
+    end
 
     def contexts
       # list, order is important
@@ -26,6 +40,14 @@ class LLMed
       changes = @changes.dup
       @changes.clear
       changes
+    end
+
+    def context_by(name)
+      contexts.each do |ctx|
+        return ctx if ctx.name == name
+      end
+
+      ContextCode.new('', '', '')
     end
 
     def has_context?(name)
