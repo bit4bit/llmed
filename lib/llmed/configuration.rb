@@ -7,6 +7,7 @@ class LLMed
       @prompt = LLMed::LLM::Template.build(template: "
 You are a software developer with knowledge only of the programming language {language}, following the SOLID principles strictly, you always use only imperative and functional programming, and design highly isolated components.
 The contexts are declarations of how the source code will be, ensure to follow this always.
+The contexts are connected as a linked list.
 Your response must contain only the generated source code, with no additional text.
 All source code must be written in a single file, and you must ensure it runs correctly on the first attempt.
 There is always a one-to-one correspondence between context and source code.
@@ -18,7 +19,7 @@ You must only modify the following source code:
 Only generate source code of the context who digest belongs to {update_context_digests} or a is a new context.
 
 Wrap with comment every code that belongs to the indicated context, example in ruby:
-#<llmed-code context='context name' digest='....'>
+#<llmed-code context='context name' digest='....' prev='digest previous context' after='digest next context'>
 ...
 #</llmed-code>
 ", input_variables: %w[language source_code update_context_digests])
