@@ -56,7 +56,6 @@ class LLMed
 
   def compile_application(app)
     app.notify('COMPILE START')
-    @logger.info("APPLICATION #{app.name} COMPILING")
 
     app.prepare
     app.evaluate
