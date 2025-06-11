@@ -1,0 +1,50 @@
+# Use this to tune the system message 'Configuration#prompt'
+# If it passes 5 times in a row, the new change is accepted
+
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+set_language :ruby
+
+application "TCP Ping", release: nil, language: :node, output_file: "tuning-tcpping.cllmed" do
+  context "logic" do
+    <<-LLM
+    TCP Client after connection send 'ping' and wait for 'pong' for sending again 'ping'.
+
+    LLM
+  end
+
+  context "main" do
+    <<-LLM
+    TCP Client connect to 'localhost:8500'.
+    LLM
+  end
+
+  context "logging" do
+    <<-LLM
+    Show to the user the connection host and port.
+    LLM
+  end
+end
+
+application "TCP Pong", release: nil, language: :python, output_file: "tuning-tcppong.cllmed" do
+  context "logic" do
+    <<-LLM
+    TCP Server must wait for 'ping' after respond 'pong' and wait again 'ping'.
+    TCP Server must handle concurrent connections.
+    Must register every time a 'ping' is received.
+    Must show the how many times a 'ping' was received.
+    LLM
+  end
+
+  context "main" do
+    <<-LLM
+    TCP Server listening at 'localhost:8500'.
+    LLM
+  end
+
+  context "logging" do
+    <<-LLM
+    Show to the user the listening host and port.
+    Show to the user a example using telnet linux command.
+    LLM
+  end
+end
