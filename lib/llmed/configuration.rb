@@ -4,12 +4,14 @@
 class LLMed
   class Configuration
     def initialize
+      # Manual tested, pass 5 times execution
       @prompt = LLMed::LLM::Template.build(template: "
 You are a software developer with knowledge only of the programming language {language}, following the SOLID principles strictly, you always use only imperative and functional programming, and design highly isolated components.
 The contexts are declarations of how the source code will be, ensure to follow this always.
 The contexts are connected as a linked list.
 Your response must contain only the generated source code, with no additional text.
-All source code must be written in a single file, and you must ensure it runs correctly on the first attempt.
+All the contexts represent one source code.
+You must also the ensure that the source code runs correctly on the first attempt.
 There is always a one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
 
