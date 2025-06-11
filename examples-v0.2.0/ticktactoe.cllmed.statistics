@@ -1,0 +1,5 @@
+{"inserted_at":1749308867,"name":"tic tac toe","provider":"openai","model":"gpt-4o","release":null,"total_tokens":961,"duration_seconds":5}
+{"inserted_at":1749380089,"name":"tic tac toe","provider":"openai","model":"gpt-4o","release":null,"total_tokens":967,"duration_seconds":10}
+{"inserted_at":1749380130,"name":"tic tac toe","provider":"openai","model":"gpt-4o","release":null,"total_tokens":999,"duration_seconds":6}
+{"inserted_at":1749380198,"name":"tic tac toe","provider":"openai","model":"gpt-4o","release":null,"total_tokens":918,"duration_seconds":7}
+{"inserted_at":1749380244,"name":"tic tac toe","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":1238,"duration_seconds":12}

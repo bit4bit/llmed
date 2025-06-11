@@ -77,7 +77,7 @@ class LLMed
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
         output_release = Release.load(File.read(release_source_code), code_comment)
         input_release = Release.load(output, code_comment)
-        output_content = output_release.merge!(input_release).content
+        output_content = output_release.merge!(input_release, user_contexts).content
         output_release.changes do |change|
           action, ctx = change
           case action
@@ -158,7 +158,7 @@ class LLMed
         @contexts.each do |ctx|
           release_context = release_instance.context_by(ctx.name)
 
-          if update_rest
+          if update_rest && release_context.digest?
             update_context_digest << release_context.digest
             next
           end
@@ -170,6 +170,7 @@ class LLMed
           elsif release_context.digest? && !ctx.same_digest?(release_context.digest)
             update_rest = true
             update_context_digest << release_context.digest
+            next
           elsif release_context.digest?
             # maybe the context is not connected to the source code
             next

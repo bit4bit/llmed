@@ -1,162 +1,173 @@
+#<llmed-code context='Entidades' digest='a4f1cc55bc6df7ea9b8810db8b7fe7da958da8e380bc621653e1e9f71120ef9f' after='9c71793151b01994e536320eeb6849008daecd3854c3e8d702f2cb7b7795cf34'>
 # LLMED-COMPILED
+class Laberinto
+  attr_reader :grid, :width, :height
 
-#<llmed-code context='Entidades' digest='f0e5c6f7e57f262c68bbc7b84825f3cbb505c9c3fb26f00b8571b3fb19f1fd04'>
-class Maze
-  attr_reader :grid, :start, :exit_point
-
-  def initialize(width = 20, height = 20)
+  def initialize(width, height)
     @width = width
     @height = height
-    @grid = generate_maze
+    @grid = Array.new(height) { Array.new(width, '#') }
+    generate
   end
 
-  private
+  def generate
+    start_x, start_y = 1, 1
+    end_x, end_y = width - 2, height - 2
+    stack = [[start_x, start_y]]
+    @grid[start_y][start_x] = '.'
 
-  def generate_maze
-    grid = Array.new(@height) { Array.new(@width, '#') }
-    
-    # Depth-first search maze generation algorithm
-    def carve_path(x, y, grid)
-      grid[y][x] = '.'
-      [[0, 1], [1, 0], [0, -1], [-1, 0]].shuffle.each do |dx, dy|
-        nx, ny = x + dx * 2, y + dy * 2
-        if nx >= 0 && nx < @width && ny >= 0 && ny < @height && grid[ny][nx] == '#'
-          grid[y + dy][x + dx] = '.'
-          carve_path(nx, ny, grid)
-        end
+    while stack.any?
+      current_x, current_y = stack.last
+      neighbors = unvisited_neighbors(current_x, current_y)
+
+      if neighbors.empty?
+        stack.pop
+      else
+        next_x, next_y = neighbors.sample
+        @grid[next_y][next_x] = '.'
+        @grid[(current_y + next_y) / 2][(current_x + next_x) / 2] = '.'
+        stack.push([next_x, next_y])
       end
-      grid
     end
 
-    start_x, start_y = 1, 1
-    carve_path(start_x, start_y, grid)
-    
-    # Ensure exit
-    grid[@height - 2][@width - 2] = '>'
-    
-    grid
+    @grid[end_y][end_x] = '>'
+  end
+
+  def unvisited_neighbors(x, y)
+    [[x+2, y], [x-2, y], [x, y+2], [x, y-2]].select do |nx, ny|
+      nx.between?(1, width-2) && ny.between?(1, height-2) && @grid[ny][nx] == '#'
+    end
+  end
+
+  def to_s
+    @grid.map(&:join).join("\n")
   end
 end
 
-class Wall
-  def self.is_wall?(cell)
-    cell == '#'
-  end
-end
-
-class Player
+class Jugador
   attr_reader :x, :y
 
-  def initialize(maze)
-    @maze = maze
-    @x = 1
-    @y = 1
+  def initialize(x, y)
+    @x = x
+    @y = y
   end
 
-  def move(direction)
-    new_x, new_y = @x, @y
-
-    case direction
-    when 'w' then new_y -= 1
-    when 's' then new_y += 1
-    when 'a' then new_x -= 1
-    when 'd' then new_x += 1
-    end
-
-    if valid_move?(new_x, new_y)
-      @x, @y = new_x, new_y
+  def move(dx, dy, laberinto)
+    new_x = @x + dx
+    new_y = @y + dy
+    if valid_move?(new_x, new_y, laberinto)
+      @x = new_x
+      @y = new_y
     end
   end
 
-  private
-
-  def valid_move?(x, y)
-    x >= 0 && x < @maze.grid[0].length &&
-    y >= 0 && y < @maze.grid.length &&
-    !Wall.is_wall?(@maze.grid[y][x])
+  def valid_move?(x, y, laberinto)
+    x.between?(0, laberinto.width - 1) &&
+    y.between?(0, laberinto.height - 1) &&
+    laberinto.grid[y][x] != '#'
   end
 end
 
-class Exit
-  def self.is_exit?(cell)
-    cell == '>'
-  end
-end
-#</llmed-code>
+class Salida
+  attr_reader :x, :y
 
-#<llmed-code context='Logica' digest='bd5fd4c270edc2bd51aefeeef7b50b3f7d3944ffac7e8e9b25a87b639e6e67ed'>
-class GameLogic
-  def initialize(maze, player)
-    @maze = maze
-    @player = player
-    @steps_count = 0
+  def initialize(laberinto)
+    @x, @y = find_exit(laberinto)
   end
 
-  def game_over?(quit_game = false)
-    quit_game || Exit.is_exit?(@maze.grid[@player.y][@player.x])
-  end
-
-  def increment_steps
-    @steps_count += 1
-  end
-
-  def steps_count
-    @steps_count
-  end
-end
-#</llmed-code>
-
-#<llmed-code context='UI' digest='3908a2ed8e831d5d11d09fb16549ba2c1bf0ecd0fd98a74b7a7dbb9585dcf721'>
-require 'io/console'
-
-class GameUI
-  def initialize(maze, player, game_logic)
-    @maze = maze
-    @player = player
-    @game_logic = game_logic
-  end
-
-  def render
-    system('clear')
-    @maze.grid.each_with_index do |row, y|
+  def find_exit(laberinto)
+    laberinto.grid.each_with_index do |row, y|
       row.each_with_index do |cell, x|
-        if x == @player.x && y == @player.y
-          print '@'
-        else
-          print cell
-        end
+        return [x, y] if cell == '>'
       end
-      puts
     end
-    puts "Steps: #{@game_logic.steps_count}"
+  end
+end
+#</llmed-code>
+
+#<llmed-code context='Logica' digest='9c71793151b01994e536320eeb6849008daecd3854c3e8d702f2cb7b7795cf34' after='9171c2f0cb1339b37dbddeb685659644a66ca990bddb9df8a57513883edbbc95'>
+# LLMED-COMPILED
+require 'fileutils'
+
+class Juego
+  def initialize(laberinto)
+    @laberinto = laberinto
+    @jugador = Jugador.new(1, 1)
+    @salida = Salida.new(laberinto)
+    @pasos = 0
+    @history_file = File.join(Dir.home, 'consola-laberinto.history')
   end
 
-  def play
+  def run
     loop do
       render
-      input = read_input
-      break if @game_logic.game_over?(input == 'q')
-      
-      if %w[w a s d].include?(input)
-        @player.move(input)
-        @game_logic.increment_steps
-      end
+      input = get_input
+      break if input == 'q'
+      process_input(input)
+      @pasos += 1
+      break if game_over?
     end
-    puts "Game Over! Total steps: #{@game_logic.steps_count}"
+    save_score
   end
 
   private
 
-  def read_input
-    input = STDIN.getch.downcase
-    %w[w a s d q].include?(input) ? input : nil
+  def render
+    system('clear') || system('cls')
+    puts "Pasos: #{@pasos}"
+    @laberinto.grid.each_with_index do |row, y|
+      puts row.map.with_index { |cell, x|
+        if @jugador.x == x && @jugador.y == y
+          '@'
+        else
+          cell
+        end
+      }.join
+    end
+  end
+
+  def get_input
+    STDIN.getch
+  end
+
+  def process_input(input)
+    case input
+    when 'w' then @jugador.move(0, -1, @laberinto)
+    when 's' then @jugador.move(0, 1, @laberinto)
+    when 'a' then @jugador.move(-1, 0, @laberinto)
+    when 'd' then @jugador.move(1, 0, @laberinto)
+    end
+  end
+
+  def game_over?
+    @jugador.x == @salida.x && @jugador.y == @salida.y
+  end
+
+  def save_score
+    FileUtils.mkdir_p(File.dirname(@history_file))
+    File.open(@history_file, 'a') do |file|
+      file.puts "#{Time.now}: Laberinto #{@laberinto.width}x#{@laberinto.height} completado en #{@pasos} pasos."
+    end
   end
 end
+#</llmed-code>
 
-# Game Runner
-maze = Maze.new
-player = Player.new(maze)
-game_logic = GameLogic.new(maze, player)
-game_ui = GameUI.new(maze, player, game_logic)
-game_ui.play
+#<llmed-code context='Main' digest='9171c2f0cb1339b37dbddeb685659644a66ca990bddb9df8a57513883edbbc95' after=''>
+# LLMED-COMPILED
+require 'io/console'
+
+def get_dimensions
+  print "Ingrese el ancho del laberinto: "
+  width = gets.chomp.to_i
+  print "Ingrese el alto del laberinto: "
+  height = gets.chomp.to_i
+  [width, height]
+end
+
+width, height = get_dimensions
+laberinto = Laberinto.new(width, height)
+juego = Juego.new(laberinto)
+juego.run
+
+puts "¡Juego terminado!"
 #</llmed-code>

@@ -1,0 +1,17 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+set_language :ruby
+
+application "C Compiler", language: :ruby, output_file: "ccompiler.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    Must only use the standard library.
+    LLM
+  end
+  context "application" do
+    <<-LLM
+    Compiler that understand C syntax translate to AMD64 and generate executable format ELF64.
+
+    The user can indicate the file to compile.
+    LLM
+  end
+end

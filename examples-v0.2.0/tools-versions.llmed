@@ -1,0 +1,9 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "MINI COUNTER", release: nil, language: :none, output_file: "tools-versions" do
+  context "OUTPUT" do
+    <<-LLM
+    SALE
+    LLM
+  end
+end

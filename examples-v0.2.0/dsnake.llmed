@@ -1,0 +1,21 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+
+application "Snake", language: :python, release: 1, output_file: "dsnake.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    Must use GTK.
+    LLM
+  end
+
+  context "logic" do
+    <<-LLM
+    Library that contains state and logic of the world, the snake and the fruits.
+    LLM
+  end
+
+  context "UI" do
+    <<-LLM
+    UI using the Library.
+    LLM
+  end
+end

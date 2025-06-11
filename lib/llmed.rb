@@ -71,6 +71,7 @@ class LLMed
 
       llm_response = llm.chat(messages: messages)
       @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
+
       app.patch_or_create(llm_response.source_code)
       app.write_statistics(llm_response)
       app.notify("COMPILE DONE #{llm_response.duration_seconds}")

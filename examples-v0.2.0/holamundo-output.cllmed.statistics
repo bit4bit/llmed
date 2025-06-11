@@ -1,0 +1,2 @@
+{"inserted_at":1749303142,"name":"hola mundo ruby","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":375,"duration_seconds":3}
+{"inserted_at":1749303146,"name":"hola mundo python","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":376,"duration_seconds":4}

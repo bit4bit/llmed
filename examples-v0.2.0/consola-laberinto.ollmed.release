@@ -1,0 +1,112 @@
+#<llmed-code context='Entidades' digest='f0e5c6f7e57f262c68bbc7b84825f3cbb505c9c3fb26f00b8571b3fb19f1fd04' after='bd5fd4c270edc2bd51aefeeef7b50b3f7d3944ffac7e8e9b25a87b639e6e67ed'>
+class Maze
+  attr_reader :grid, :start, :exit_point
+
+  def initialize(width = 20, height = 20)
+    @width = width
+    @height = height
+    @grid = generate_maze
+  end
+
+  private
+
+  def generate_maze
+    grid = Array.new(@height) { Array.new(@width, '#') }
+    
+    # Depth-first search maze generation algorithm
+    def carve_path(x, y, grid)
+      grid[y][x] = '.'
+      [[0, 1], [1, 0], [0, -1], [-1, 0]].shuffle.each do |dx, dy|
+        nx, ny = x + dx * 2, y + dy * 2
+        if nx >= 0 && nx < @width && ny >= 0 && ny < @height && grid[ny][nx] == '#'
+          grid[y + dy][x + dx] = '.'
+          carve_path(nx, ny, grid)
+        end
+      end
+      grid
+    end
+
+    start_x, start_y = 1, 1
+    carve_path(start_x, start_y, grid)
+    
+    # Ensure exit
+    grid[@height - 2][@width - 2] = '>'
+    
+    grid
+  end
+end
+
+class Wall
+  def self.is_wall?(cell)
+    cell == '#'
+  end
+end
+
+class Player
+  attr_reader :x, :y
+
+  def initialize(maze)
+    @maze = maze
+    @x = 1
+    @y = 1
+  end
+
+  def move(direction)
+    new_x, new_y = @x, @y
+
+    case direction
+    when 'w' then new_y -= 1
+    when 's' then new_y += 1
+    when 'a' then new_x -= 1
+    when 'd' then new_x += 1
+    end
+
+    if valid_move?(new_x, new_y)
+      @x, @y = new_x, new_y
+    end
+  end
+
+  private
+
+  def valid_move?(x, y)
+    x >= 0 && x < @maze.grid[0].length &&
+    y >= 0 && y < @maze.grid.length &&
+    !Wall.is_wall?(@maze.grid[y][x])
+  end
+end
+
+class Exit
+  def self.is_exit?(cell)
+    cell == '>'
+  end
+end
+#</llmed-code>
+#<llmed-code context='Logica' digest='9c71793151b01994e536320eeb6849008daecd3854c3e8d702f2cb7b7795cf34' after=''>
+require 'fileutils'
+
+class GameLogic
+  attr_reader :steps_count
+
+  def initialize(maze, player)
+    @maze = maze
+    @player = player
+    @steps_count = 0
+    @history_file = File.join(Dir.home, 'consola-laberinto.history')
+  end
+
+  def game_over?(quit_game = false)
+    quit_game || Exit.is_exit?(@maze.grid[@player.y][@player.x])
+  end
+
+  def increment_steps
+    @steps_count += 1
+  end
+
+  def save_history
+    FileUtils.mkdir_p(File.dirname(@history_file))
+    File.open(@history_file, 'a') do |file|
+      file.puts "#{Time.now}: Steps - #{@steps_count}"
+    end
+  end
+end
+#</llmed-code>

@@ -1,8 +1,8 @@
-set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-sonnet-20240620'
+set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-haiku-20241022'
 
 # TODO: estoy en un laberinto, como adicionar que solicite las dimensiones del mapa?
 # he intendado varias opciones pero no actualiza el codigo.
-application "laberinto", release: 2, language: 'ruby', output_file: "consola-laberinto.ollmed" do
+application "laberinto", release: nil, language: 'ruby', output_file: "consola-laberinto.ollmed" do
   context "Entidades" do
     <<-LLM
     Entidades:
@@ -15,7 +15,6 @@ application "laberinto", release: 2, language: 'ruby', output_file: "consola-lab
      - Se genera de manera aleatoria usando los muros.
      - Siempre tiene solucion.
      - Siempre tiene una salida.
-     - Siempre contiene caminos.
      - Esta correctamente generado.
 
     ## Jugador
@@ -35,7 +34,7 @@ application "laberinto", release: 2, language: 'ruby', output_file: "consola-lab
     LLM
   end
 
-  context "Main" do
+  context "UI" do
     <<-LLM
     Interfaz del juego es terminal linux.
     Solicitar al jugador las dimensiones del laberinto.
@@ -54,7 +53,8 @@ application "laberinto", release: 2, language: 'ruby', output_file: "consola-lab
 
     El movimiento del jugador es fluido.
     Mostrar la cantidad de pasos realizados.
-    Mostrar mensaje de bienvenida.
     LLM
   end
+
+
 end

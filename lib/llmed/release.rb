@@ -25,7 +25,7 @@ class LLMed
     end
 
     def content
-      out = ''
+      out = String.new()
 
       @contexts.each do |ctx|
         out += ctx.to_llmed_code(@code_comment)
@@ -61,7 +61,7 @@ class LLMed
       context_by(name).digest?
     end
 
-    def merge!(release)
+    def merge!(release, user_contexts)
       contexts = []
 
       # updates
@@ -95,6 +95,14 @@ class LLMed
         end
         contexts.insert(idx, new_ctx)
         @changes << [:added, new_ctx]
+      end
+
+      # fix user contexts digest
+      contexts.each do |ctx|
+        user_context_digest = user_contexts[ctx.name]
+        if !user_context_digest.nil?
+          ctx.digest = user_context_digest
+        end
       end
 
       @contexts = contexts

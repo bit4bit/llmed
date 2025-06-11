@@ -16,8 +16,8 @@ code B
 code AA
 #</llmed-code>", '#')
 
-    r1.merge!(rchange)
-    expect(r1.content).to eq "#<llmed-code context='A' digest='abc' after='contextB'>
+    r1.merge!(rchange, {'A' => 'contextA'})
+    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
@@ -36,7 +36,7 @@ code B
 code C
 #</llmed-code>", '#')
 
-    r1.merge!(rchange)
+    r1.merge!(rchange, {})
 
     expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextC'>
 code AA

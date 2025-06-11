@@ -1,0 +1,44 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o'
+set_language :ruby
+
+application "hola mundo ruby", release: nil, output_file: "malagramatica.ollmed" do
+  context "Library Dependencies" do
+    <<-LLM
+    Use langchain library from now referenced as ailibrary.
+    use Langchain::LLM::OpenAI.
+    Additional instantion arguments of Langchain::LLM::OpenAI
+    default_options: {chat_model: 'gpt-4o'}
+    api_key: from environment var 'OPENAI_API_KEY'.
+    When using ailibrary use chat and the argument messages to run the system prompt and the given input and from the return, returns the response of the method '.chat_completion' remove all characters '`' and the first word 'json' only if exists.
+    LLM
+  end
+  
+  context "Library" do
+    <<-LLM
+    Given a text input in one line
+    And the system prompt `
+eres un correcto ortografico del idioma ingles, indificas las palabras gramaticales incorrectas y provee sugerencias de correcion.
+tu unica respuesta es una estructura json de la siguiente manera:
+{"words": [{"word": "palabra incorrecta", "suggestions": ["suggestion1", "suggestion2", ...], "position": [numeros de caracteres donde empieza, numeros de caracteres donde finaliza]}, ...]}
+`
+   Then use alibrary and return.
+    LLM
+  end
+
+  context "Application Dependencies" do
+    <<-LLM
+    Use GTK.
+    LLM
+  end
+
+  context "Application" do
+    <<-LLM
+    Has a text input.
+    Using the ailibrary using the text input and show in another input text as submit, follow:
+    - parse response as hash
+    - the structure of the response is
+{"words": [{"word": "palabra incorrecta", "suggestions": ["suggestion1", "suggestion2", ...], "position": [numeros de caracteres donde empieza, numeros de caracteres donde finaliza]}, ...]}
+    - using the position from the structure change the color to red of the words in the text input.
+    LLM
+  end
+end

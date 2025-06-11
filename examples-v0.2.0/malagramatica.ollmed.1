@@ -1,0 +1,61 @@
+
+# LLMED-COMPILED
+require 'gtk3'
+require 'json'
+require 'langchain'
+
+class GrammarCheckerApp
+  def initialize
+    @api_key = ENV['OPENAI_API_KEY']
+    @llm = Langchain::LLM::OpenAI.new(api_key: @api_key, default_options: { chat_model: 'gpt-4o-mini' })
+
+    @window = Gtk::Window.new("Grammar Checker")
+    @window.set_size_request(400, 300)
+    @window.signal_connect("destroy") { Gtk.main_quit }
+
+    @vbox = Gtk::Box.new(:vertical, 5)
+    @text_view = Gtk::TextView.new
+    @text_view.set_wrap_mode(:word)
+
+    @submit_button = Gtk::Button.new(label: "Check Grammar")
+    @submit_button.signal_connect("clicked") { check_grammar }
+
+    @vbox.pack_start(@text_view, expand: true, fill: true, padding: 0)
+    @vbox.pack_start(@submit_button, expand: false, fill: true, padding: 0)
+    @window.add(@vbox)
+    @window.show_all
+  end
+
+  def check_grammar
+    buffer = @text_view.buffer
+    start_iter, end_iter = buffer.bounds
+    input_text = buffer.get_text(start_iter, end_iter, false)
+
+    system_prompt = <<~PROMPT
+      eres un correcto ortografico del idioma ingles, indificas las palabras gramaticales incorrectas y provee sugerencias de correcion.
+      tu unica respuesta es una estructura json de la siguiente manera:
+      {"words": [{"word": "palabra incorrecta", "suggestions": ["suggestion1", "suggestion2", ...], "position": [numeros de caracteres donde empieza, numeros de caracteres donde finaliza]}, ...]}
+    PROMPT
+
+    response = @llm.chat(messages: [{ role: "system", content: system_prompt }, { role: "user", content: input_text }])
+    json_response = response.chat_completion.gsub('`', '').sub(/^json/, '')
+    parse_response_and_update_text_view(JSON.parse(json_response))
+  end
+
+  def parse_response_and_update_text_view(response_hash)
+    buffer = @text_view.buffer
+    tag_table = buffer.tag_table
+    red_tag = tag_table.lookup("red") || buffer.create_tag("red", { "foreground" => "red" })
+
+    response_hash["words"].each do |word_info|
+      start_pos = word_info["position"][0]
+      end_pos = word_info["position"][1]
+      start_iter = buffer.get_iter_at_offset(start_pos)
+      end_iter = buffer.get_iter_at_offset(end_pos)
+      buffer.apply_tag(red_tag, start_iter, end_iter)
+    end
+  end
+end
+
+app = GrammarCheckerApp.new
+Gtk.main

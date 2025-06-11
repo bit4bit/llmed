@@ -1,0 +1,66 @@
+# -*- mode: ruby-mode -*-
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "JIRAMELLO", release: nil, language: :node, output_file: "jiramello.ollmed" do
+  context "dependencies" do
+    <<-LLM
+    * Must use only the standard/native library.
+    * Must not use external dependencies.
+    * User must provide the JIRA_DOMAIN, JIRA_EMAIL and JIRA_API_TOKEN via system environment.
+    * Must use Jira REST API don't forget to urlencode the query parameters.
+    LLM
+  end
+
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-worklogs/#api-rest-api-2-issue-issueidorkey-worklog-post
+  context "API" do
+    <<-LLM
+    API Server listening port 3001.
+    Expose the following endpoints:
+    - GET /tasks
+      - list all the jira task assigned to the current user excluding in state done.
+      - return array of map with the key,title,state,aggregatetimeoriginalestimate,aggregatetimespent.
+      - state must dowcase and must not contains whitspaces.
+    - GET /task/:key
+      - return map with  the key,title,state,aggregatetimeoriginalestimate,aggregatetimespent. 
+    - POST /clock/:key/in
+      - expected request body {timeSpentSeconds: integer}.
+      - add the worklog to jira task given the key.
+        - add to url the query parameter notifyUsers=false.   
+        - add comment 'i did something'.
+        - timeSpentSeconds is rounded to next minute.
+    LLM
+  end
+end
+
+
+application "JIRAMELLO UI", release: nil, language: :html, output_file: "jiramelloui.ollmed" do
+  context("server endpoints") { from_source_code("llmed-out/jiramello.ollmed") }
+  
+  context "HTML WEB SITE UI" do
+    <<-LLM
+    Show button for enabling the notifications, also must request the permission.
+
+    Table with the results of endpoint '/tasks', where:
+     - columns follow the order title,state,aggregatedtimeoriginalestimate,aggregatedtimespent,key.
+     - key is a hyperlink to jira issue.
+     - key display underline.
+     - aggregatedtimespent is reactive.
+     - aggregatedtimespent is displayed in minutes.
+     - every row must have a button to starts a chronometer and button to stop the chronometer.
+       - when the chronometer start:
+         - send a web browser notification to inform.
+         - store the elapsed time in seconds.
+       - when the chronometor stop:
+         - send a web browser notification to inform.
+         - send the elapsed time using the endpoint '/clock/:key/in':
+           - send a web browser notification to inform if the endpoint '/clock/:key/in' fails.
+         - refresh aggregatedtimespent using endpoint '/task/:key'.
+     -  pointer hover over the row must highlight the row.
+     - change row background when state:
+       - case inprogress is green
+       - case blocked is red
+       - case selectedfordevelopment is yellow
+       - default is gray
+    LLM
+  end
+end
