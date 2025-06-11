@@ -70,16 +70,16 @@ class LLMed
       output_content = output
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
-        output_release = Release.load(File.read(release_source_code))
-        input_release = Release.load(output)
-        output_content = output_release.merge!(input_release, code_comment).content
+        output_release = Release.load(File.read(release_source_code), code_comment)
+        input_release = Release.load(output, code_comment)
+        output_content = output_release.merge!(input_release).content
         output_release.changes do |change|
           action, ctx = change
           case action
           when :added
-            @logger.info("APPLICATION #{@name} ADDING NEW CONTEXT #{ctx.name}")
+            @logger.info("APPLICATION #{@name} PATCH ADDING NEW CONTEXT #{ctx.name}")
           when :updated
-            @logger.info("APPLICATION #{@name} PATCHING CONTEXT #{ctx.name} TO DIGEST #{ctx.digest}")
+            @logger.info("APPLICATION #{@name} PATCH UPDATING CONTEXT #{ctx.name} TO DIGEST #{ctx.digest}")
           end
         end
       end
@@ -153,23 +153,22 @@ class LLMed
         @contexts.each do |ctx|
           release_context = release_instance.context_by(ctx.name)
 
-          # added new context
-          if !release_context.digest? and !user_contexts[ctx.name].nil?
-            update_context_digest << user_contexts[ctx.name]
-            next
-          elsif release_context.digest?
-            # maybe the context is not connected to the source code
-            next
-          end
-
           if update_rest
             update_context_digest << release_context.digest
             next
           end
-          next if ctx.same_digest?(release_context.digest)
 
-          update_rest = true
-          update_context_digest << release_context.digest
+          # added new context
+          if !release_context.digest? && !user_contexts[ctx.name].nil?
+            update_context_digest << user_contexts[ctx.name]
+            next
+          elsif release_context.digest? && !ctx.same_digest?(release_context.digest)
+            update_rest = true
+            update_context_digest << release_context.digest
+          elsif release_context.digest?
+            # maybe the context is not connected to the source code
+            next
+          end
         end
       end
 
@@ -195,12 +194,12 @@ class LLMed
 
       return {} unless File.exist?(release_source_code)
 
-      File.read(release_source_code).scan(/context='(.+)' digest='(.+)'/).to_h
+      File.read(release_source_code).scan(/context='(.+?)' digest='(.+?)'/).to_h
     end
 
     def release_instance
       if File.exist?(release_source_code)
-        Release.load(File.read(release_source_code))
+        Release.load(File.read(release_source_code), code_comment)
       else
         Release.empty
       end

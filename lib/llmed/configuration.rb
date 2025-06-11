@@ -19,7 +19,7 @@ You must only modify the following source code:
 Only generate source code of the context who digest belongs to {update_context_digests} or a is a new context.
 
 Wrap with comment every code that belongs to the indicated context, example in ruby:
-#<llmed-code context='context name' digest='....' prev='digest previous context' after='digest next context'>
+#<llmed-code context='context name' digest='....' after='digest next context'>
 ...
 #</llmed-code>
 ", input_variables: %w[language source_code update_context_digests])
