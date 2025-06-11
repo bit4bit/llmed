@@ -50,6 +50,26 @@ code B
 <!--</llmed-code>-->"
   end
 
+  it 'merge only update broken HTML' do
+    r1 = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+code A
+<!--</llmed-code>-->
+<!--<llmed-code context='B' digest='contextB' after=''>-->
+code B
+<!--</llmed-code>-->", @html_comment)
+    rchange = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+code AA
+<!--</llmed-code-->", @html_comment)
+
+    r1.merge!(rchange, {'A' => 'contextA'})
+    expect(r1.content).to eq "<!--<llmed-code context='A' digest='contextA' after='contextB'>-->
+code AA
+<!--</llmed-code>-->
+<!--<llmed-code context='B' digest='contextB' after=''>-->
+code B
+<!--</llmed-code>-->"
+  end
+
   it 'merge append new context' do
     r1 = LLMed::Release.load("#<llmed-code context='A' digest='contextA' after='contextB'>
 code AA

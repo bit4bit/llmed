@@ -108,7 +108,7 @@ class LLMed
         next if contexts.any? { |ctx| ctx.name == name }
 
         new_ctx = ContextCode.new(name, digest, "\n", '')
-        contexts.insert(0, new_ctx)
+        contexts.prepend(new_ctx)
         @changes << [:added, new_ctx]
       end
 
@@ -125,7 +125,7 @@ class LLMed
       @code_comment = code_comment
       @contexts = []
 
-      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>#{@code_comment.end}(.+?)#{@code_comment.begin}+\s*</llmed-code>}im).each do |match|
+      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>#{@code_comment.end}(.+?)#{@code_comment.begin}+.*?/llmed-code}im).each do |match|
         name, digest, after_block, code = match
         after = if after_block.nil?
                   ''

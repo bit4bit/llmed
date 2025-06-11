@@ -101,7 +101,7 @@ class LLMed
         output_release = Release.load(File.read(release_source_code), @code_comment)
         input_release = Release.load(output, @code_comment)
         output_content = output_release.merge!(input_release, user_contexts).content
-        output_release.changes do |change|
+        output_release.changes.each do |change|
           action, ctx = change
           case action
           when :added
