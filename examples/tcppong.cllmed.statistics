@@ -1,0 +1,3 @@
+{"inserted_at":1749665024,"name":"TCP Pong","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":942,"duration_seconds":10}
+{"inserted_at":1749665126,"name":"TCP Pong","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":1017,"duration_seconds":10}
+{"inserted_at":1749665235,"name":"TCP Pong","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":986,"duration_seconds":12}

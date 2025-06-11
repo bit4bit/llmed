@@ -11,7 +11,7 @@ application "TCP Ping", release: nil, language: :node, output_file: "tcpping.cll
 
   context "main" do
     <<-LLM
-    TCP Client connect to 'localhost:8300'.
+    TCP Client connect to 'localhost:8500'.
     LLM
   end
 
