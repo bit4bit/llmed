@@ -8,6 +8,7 @@ describe LLMed::Release do
   before(:all) do
     @ruby_comment = LLMed::Application::CodeComment.new(:ruby)
     @html_comment = LLMed::Application::CodeComment.new(:html)
+    @node_comment = LLMed::Application::CodeComment.new(:node)
   end
 
   it 'merge only update' do
@@ -68,6 +69,28 @@ code AA
 <!--<llmed-code context='B' digest='contextB' after=''>-->
 code B
 <!--</llmed-code>-->"
+  end
+
+  it 'merge only node broken comment' do
+    r1 = LLMed::Release.load("//<llmed-code context='A' digest='abc' after='contextB'>
+code A
+//</llmed-code>
+//<llmed-code context='B' digest='contextB' after=''>
+code B
+//</llmed-code>", @node_comment)
+    rchange = LLMed::Release.load("//<llmed-code context='A' digest='abc' after='contextB'>
+code AA
+http://localhost:300;
+//</llmed-code-->", @node_comment)
+
+    r1.merge!(rchange, {'A' => 'contextA'})
+    expect(r1.content).to eq "//<llmed-code context='A' digest='contextA' after='contextB'>
+code AA
+http://localhost:300;
+//</llmed-code>
+//<llmed-code context='B' digest='contextB' after=''>
+code B
+//</llmed-code>"
   end
 
   it 'merge append new context' do
