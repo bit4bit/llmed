@@ -107,7 +107,9 @@ class LLMed
       !digests_of_context_to_update.tap do |digests|
         digests.each do |digest|
           context_by_digest = release_contexts.invert
+
           if context_by_digest[digest].nil?
+
             @logger.info("APPLICATION #{@name} ADDING CONTEXT #{user_contexts.invert[digest]}")
           else
             @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")

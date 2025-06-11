@@ -1,0 +1,3 @@
+{"inserted_at":1749663852,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":790,"duration_seconds":6}
+{"inserted_at":1749663872,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1352,"duration_seconds":7}
+{"inserted_at":1749664825,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":757,"duration_seconds":8}

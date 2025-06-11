@@ -48,4 +48,24 @@ code C
 code B
 #</llmed-code>"
   end
+
+  it 'merge context without source code' do
+    r1 = LLMed::Release.load("#<llmed-code context='A' digest='abc'>
+code A
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after=''>
+code B
+#</llmed-code>", '#')
+    rchange = LLMed::Release.load("#<llmed-code context='A' digest='abc' after='contextB'>
+code AA
+#</llmed-code>", '#')
+
+    r1.merge!(rchange, {'A' => 'contextA'})
+    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
+code AA
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after=''>
+code B
+#</llmed-code>"
+  end
 end

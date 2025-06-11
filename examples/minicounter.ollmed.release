@@ -1,0 +1,41 @@
+//<llmed-code context='dependencies' digest='d1c3c63de4da6a330a1a3975e280f1a69515e1bf34bbb8b11db37e40ac5bebd4'>
+// No external dependencies are used, only standard/native libraries.
+//</llmed-code>
+
+const http = require('http');
+const { URL } = require('url');
+
+//<llmed-code context='API' digest='77cf954c4443f521a3c00a4c480b2346389cbdaedf441bf9f3f69f6a727472a4'>
+let count = 0;
+
+const requestListener = (req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (url.pathname === '/count') {
+        if (req.method === 'GET') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ count }));
+        } else if (req.method === 'POST') {
+            count += 1;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ count }));
+        } else {
+            res.writeHead(405);
+            res.end();
+        }
+    } else {
+        res.writeHead(404);
+        res.end();
+    }
+};
+
+const server = http.createServer(requestListener);
+server.listen(3001, () => {
+    console.log('API Server listening on port 3001');
+});
+//</llmed-code>

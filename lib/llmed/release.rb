@@ -25,7 +25,7 @@ class LLMed
     end
 
     def content
-      out = String.new()
+      out = String.new
 
       @contexts.each do |ctx|
         out += ctx.to_llmed_code(@code_comment)
@@ -100,9 +100,7 @@ class LLMed
       # fix user contexts digest
       contexts.each do |ctx|
         user_context_digest = user_contexts[ctx.name]
-        if !user_context_digest.nil?
-          ctx.digest = user_context_digest
-        end
+        ctx.digest = user_context_digest unless user_context_digest.nil?
       end
 
       @contexts = contexts
@@ -118,8 +116,14 @@ class LLMed
       @code_comment = code_comment
       @contexts = []
 
-      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)' after='(.*?)'>(.+?)#{@code_comment}+\s*</llmed-code>}im).each do |match|
-        name, digest, after, code = match
+      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>(.+?)#{@code_comment}+\s*</llmed-code>}im).each do |match|
+        name, digest, after_block, code = match
+        after = if after_block.nil?
+                  ''
+                else
+                  after_block[/after='(.*?)'/, 1]
+                end
+
         @contexts << ContextCode.new(name, digest, code, after)
       end
     end
