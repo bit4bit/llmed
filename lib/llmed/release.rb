@@ -5,7 +5,7 @@ class LLMed
   class Release
     ContextCode = Struct.new(:name, :digest, :code, :after) do
       def to_llmed_code(code_comment)
-        "#{code_comment}<llmed-code context='#{name}' digest='#{digest}' after='#{after}'>#{code}#{code_comment}</llmed-code>"
+        "#{code_comment.begin}<llmed-code context='#{name}' digest='#{digest}' after='#{after}'>#{code_comment.end}#{code}#{code_comment.begin}</llmed-code>#{code_comment.end}"
       end
 
       def digest?
@@ -20,8 +20,8 @@ class LLMed
       new(origin, code_comment)
     end
 
-    def self.empty
-      new('', '')
+    def self.empty(code_comment)
+      new('', code_comment)
     end
 
     def content
@@ -75,7 +75,7 @@ class LLMed
         end
       end
 
-      # insertions
+      # insertions from release
       insertions = []
       release.contexts.each do |new_ctx|
         next if has_context?(new_ctx.name)
@@ -103,6 +103,15 @@ class LLMed
         ctx.digest = user_context_digest unless user_context_digest.nil?
       end
 
+      # insertions missed user contexts
+      user_contexts.each do |name, digest|
+        next if contexts.any? { |ctx| ctx.name == name }
+
+        new_ctx = ContextCode.new(name, digest, "\n", '')
+        contexts.insert(0, new_ctx)
+        @changes << [:added, new_ctx]
+      end
+
       @contexts = contexts
       self
     end
@@ -116,7 +125,7 @@ class LLMed
       @code_comment = code_comment
       @contexts = []
 
-      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>(.+?)#{@code_comment}+\s*</llmed-code>}im).each do |match|
+      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>#{@code_comment.end}(.+?)#{@code_comment.begin}+\s*</llmed-code>}im).each do |match|
         name, digest, after_block, code = match
         after = if after_block.nil?
                   ''

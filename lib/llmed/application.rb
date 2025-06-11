@@ -5,12 +5,34 @@ class LLMed
   class Application
     attr_reader :contexts, :name, :language
 
-    def initialize(name:, language:, output_file:, block:, logger:, release:, release_dir:, output_dir:)
-      validate_language(language)
+    class CodeComment
+      def initialize(language)
+        raise "language #{language} not supported" if code_comment(language.to_sym).nil?
 
+        @language = language.to_sym
+      end
+
+      def begin
+        code_comment(@language).first
+      end
+
+      def end
+        code_comment(@language).last
+      end
+
+      private
+
+      def code_comment(language)
+        { ruby: ['#', ''], node: ['//', ''], elixir: ['#', ''], bash: ['#', ''], python: ['#', ''], go: ['//', ''], javascript: ['//', ''], c: ['//', ''],
+          cpp: ['//', ''], html: ['<!--', '-->'] }.fetch(language)
+      end
+    end
+
+    def initialize(name:, language:, output_file:, block:, logger:, release:, release_dir:, output_dir:)
       @name = name
       @output_file = output_file
-      @language = language
+      @language = language.to_sym
+      @code_comment = CodeComment.new(language)
       @block = block
       @contexts = []
       @logger = logger
@@ -76,8 +98,8 @@ class LLMed
       output_content = output
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
-        output_release = Release.load(File.read(release_source_code), code_comment(@language))
-        input_release = Release.load(output, code_comment(@language))
+        output_release = Release.load(File.read(release_source_code), @code_comment)
+        input_release = Release.load(output, @code_comment)
         output_content = output_release.merge!(input_release, user_contexts).content
         output_release.changes do |change|
           action, ctx = change
@@ -110,7 +132,6 @@ class LLMed
           context_by_digest = release_contexts.invert
 
           if context_by_digest[digest].nil?
-
             @logger.info("APPLICATION #{@name} ADDING CONTEXT #{user_contexts.invert[digest]}")
           else
             @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")
@@ -204,21 +225,10 @@ class LLMed
 
     def release_instance
       if File.exist?(release_source_code)
-        Release.load(File.read(release_source_code), code_comment(@language))
+        Release.load(File.read(release_source_code), @code_comment)
       else
-        Release.empty
+        Release.empty(@code_comment)
       end
-    end
-
-    def code_comment(language)
-      { ruby: '#', node: '//', elixir: '#', bash: '#', python: '#', go: '//', javascript: '//', c: '//',
-        cpp: '//' }.fetch(language)
-    end
-
-    def validate_language(language)
-      return unless code_comment(language.to_sym).nil?
-
-      raise "language #{language} not supported"
     end
   end
 end

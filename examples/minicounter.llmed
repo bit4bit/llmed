@@ -21,7 +21,7 @@ application "MINI COUNTER", release: 1, language: :node, output_file: "minicount
   end
 end
 
-application "MINI COUNTER UI", release: nil, language: :html, output_file: "minicounterui.html" do
+application "MINI COUNTER UI", release: 4, language: :html, output_file: "minicounterui.html" do
   context("server api") { from_release("minicounter.ollmed.release") }
   context "UI" do
     <<-LLM
