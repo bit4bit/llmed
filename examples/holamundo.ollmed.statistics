@@ -1,0 +1,11 @@
+{"inserted_at":1749667282,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":621,"duration_seconds":5}
+{"inserted_at":1749667325,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":621,"duration_seconds":4}
+{"inserted_at":1749667367,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":622,"duration_seconds":5}
+{"inserted_at":1749667386,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":599,"duration_seconds":4}
+{"inserted_at":1749667427,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":632,"duration_seconds":6}
+{"inserted_at":1749667446,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":587,"duration_seconds":4}
+{"inserted_at":1749667457,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":599,"duration_seconds":5}
+{"inserted_at":1749667466,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":632,"duration_seconds":5}
+{"inserted_at":1749667511,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":627,"duration_seconds":6}
+{"inserted_at":1749667520,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":592,"duration_seconds":5}
+{"inserted_at":1749667563,"name":"hola mundo ruby","provider":"anthropic","model":"claude-3-5-sonnet-20240620","release":null,"total_tokens":594,"duration_seconds":4}

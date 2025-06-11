@@ -4,7 +4,10 @@
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 set_language :ruby
 
-application "TCP Ping", release: nil, language: :node, output_file: "tuning-tcpping.cllmed" do
+application "TCP Ping", release: nil, language: :c, output_file: "tuning-tcpping.cllmed" do
+  context "Dependencies" do
+  end
+
   context "logic" do
     <<-LLM
     TCP Client after connection send 'ping' and wait for 'pong' for sending again 'ping'.
@@ -26,6 +29,9 @@ application "TCP Ping", release: nil, language: :node, output_file: "tuning-tcpp
 end
 
 application "TCP Pong", release: nil, language: :python, output_file: "tuning-tcppong.cllmed" do
+  context "Dependencies" do
+  end
+
   context "logic" do
     <<-LLM
     TCP Server must wait for 'ping' after respond 'pong' and wait again 'ping'.

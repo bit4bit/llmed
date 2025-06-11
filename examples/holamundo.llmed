@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-sonnet-20240620'
 
-application "hola mundo ruby", release: 1, language: 'ruby', output_file: "holamundo-ruby.ollmed" do
+application "hola mundo ruby", release: nil, language: :elixir, output_file: "holamundo.ollmed" do
   # More stable context: if this changes, all subsequent context will be recompiled.
   context "variables" do
     <<-LLM
@@ -17,17 +17,3 @@ application "hola mundo ruby", release: 1, language: 'ruby', output_file: "holam
     LLM
   end
 end
-
-# application "hola mundo python", language: 'python', output_file: "holamundo-python.ollmed" do
-#   context "variables" do
-#     <<-LLM
-#     Variable saludos de valor 'hola mundo'.
-#     LLM
-#   end
-
-#   context "main" do
-#     <<-LLM
-#     Mostrar al usuario la variable saludos.
-#     LLM
-#   end
-# end

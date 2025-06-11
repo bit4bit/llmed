@@ -6,7 +6,7 @@ class LLMed
     attr_reader :contexts, :name, :language
 
     def initialize(name:, language:, output_file:, block:, logger:, release:, release_dir:, output_dir:)
-      raise 'required language' if language.nil?
+      validate_language(language)
 
       @name = name
       @output_file = output_file
@@ -76,8 +76,8 @@ class LLMed
       output_content = output
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
-        output_release = Release.load(File.read(release_source_code), code_comment)
-        input_release = Release.load(output, code_comment)
+        output_release = Release.load(File.read(release_source_code), code_comment(@language))
+        input_release = Release.load(output, code_comment(@language))
         output_content = output_release.merge!(input_release, user_contexts).content
         output_release.changes do |change|
           action, ctx = change
@@ -145,10 +145,6 @@ class LLMed
 
     private
 
-    def code_comment
-      { ruby: '#', node: '//' }.fetch(@language.to_sym)
-    end
-
     def digests_of_context_to_update
       update_context_digest = []
 
@@ -208,10 +204,21 @@ class LLMed
 
     def release_instance
       if File.exist?(release_source_code)
-        Release.load(File.read(release_source_code), code_comment)
+        Release.load(File.read(release_source_code), code_comment(@language))
       else
         Release.empty
       end
+    end
+
+    def code_comment(language)
+      { ruby: '#', node: '//', elixir: '#', bash: '#', python: '#', go: '//', javascript: '//', c: '//',
+        cpp: '//' }.fetch(language)
+    end
+
+    def validate_language(language)
+      return unless code_comment(language.to_sym).nil?
+
+      raise "language #{language} not supported"
     end
   end
 end
