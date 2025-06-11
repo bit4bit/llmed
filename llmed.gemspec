@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'llmed'
-  s.version     = '0.3.3'
+  s.version     = '0.3.4'
   s.licenses    = ['GPL-3.0']
   s.summary = "LLM Execution Development"
   s.description     = "Use this 'compiler' to build software using LLMs in a controlled way. In classical terms, the LLM is the compiler, the context description is the programming language, and the generated output is the binary."
