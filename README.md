@@ -16,7 +16,7 @@ In classic terms the LLM is the Compiler, Source Code is the Binary, the Program
 ```ruby
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
-application "hola mundo ruby", language: :ruby, output_file: "holamundo-ruby.ollmed" do
+application "hola mundo ruby", release: nil, language: :ruby, output_file: "holamundo-ruby.ollmed" do
   # More stable context: if this changes, all subsequent context will be recompiled.
   context "variables" do
     <<-LLM

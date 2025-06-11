@@ -39,11 +39,16 @@ class LLMed
       return unless @release
 
       output_file = Pathname.new(@output_dir) + @output_file
-      if @release && !File.exist?(release_source_code)
+
+      if @release && File.exist?(output_file) && !File.exist?(release_source_code)
         FileUtils.cp(output_file, release_source_code)
         FileUtils.cp(output_file, release_main_source_code)
         @logger.info("APPLICATION #{@name} RELEASE FILE #{release_source_code}")
+      elsif @release && !File.exist?(output_file) && File.exist?(release_main_source_code)
+        FileUtils.cp(release_main_source_code, output_file)
+        return
       end
+
       @logger.info("APPLICATION #{@name} INPUT RELEASE FILE #{release_main_source_code}")
     end
 
