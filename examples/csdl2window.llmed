@@ -1,0 +1,17 @@
+set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+
+application "csdl2window", release: 2, language: :c, output_file: "csdlwindow.c" do
+  context "Application" do
+    <<-LLM
+    Use SDL2.
+    
+    Draw the text 'hola mundo' using single primitives, considerations:
+    - the text is in the middle of the window.
+    - the text has a wave effect.
+    LLM
+  end
+end
+
+deploy "compile" do
+  %x[gcc #{@output_dir}/csdlwindow.c -o #{@output_dir}/csdlwindow.out $(pkg-config --libs --cflags sdl2)  $(pkg-config --cflags --libs SDL2_ttf) -lm]
+end

@@ -1,0 +1,16 @@
+set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-sonnet-20240620'
+
+application "Bouncy Ball", release: nil, language: :cpp, output_file: "bouncyball.cpp" do
+  context "Game" do
+    <<-LLM
+    Bouncing ball in the window.
+    LLM
+  end
+
+  context "UI" do
+    <<-LLM
+    Use SDL.
+    Draw using single primitives.
+    LLM
+  end
+end

@@ -16,6 +16,7 @@ class LLMed
   def initialize(logger:, output_dir:, release_dir:)
     @logger = logger
     @applications = []
+    @deploys = []
     @configuration = Configuration.new
     @release_dir = release_dir || output_dir
     @output_dir = output_dir
@@ -46,9 +47,17 @@ class LLMed
     @applications << @app
   end
 
+  def deploy(name, &block)
+    @deploys << Deployment.new(name: name, output_dir: @output_dir, logger: @logger, block: block)
+  end
+
   def compile
     @applications.each do |app|
       compile_application(app)
+    end
+
+    @deploys.each do |deploy|
+      deploy.execute
     end
   end
 
@@ -84,3 +93,4 @@ require_relative 'llmed/configuration'
 require_relative 'llmed/context'
 require_relative 'llmed/release'
 require_relative 'llmed/application'
+require_relative 'llmed/deployment'

@@ -120,6 +120,8 @@ class LLMed
     def system_prompt(configuration)
       configuration.prompt(language: language,
                            source_code: source_code,
+                           code_comment_begin: @code_comment.begin,
+                           code_comment_end: @code_comment.end,
                            update_context_digests: digests_of_context_to_update)
     end
 

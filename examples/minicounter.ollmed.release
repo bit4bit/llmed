@@ -1,11 +1,7 @@
-//<llmed-code context='dependencies' digest='d1c3c63de4da6a330a1a3975e280f1a69515e1bf34bbb8b11db37e40ac5bebd4'>
+//<llmed-code context='dependencies' digest='d1c3c63de4da6a330a1a3975e280f1a69515e1bf34bbb8b11db37e40ac5bebd4' after=''>
 // No external dependencies are used, only standard/native libraries.
 //</llmed-code>
-
-const http = require('http');
-const { URL } = require('url');
-
-//<llmed-code context='API' digest='77cf954c4443f521a3c00a4c480b2346389cbdaedf441bf9f3f69f6a727472a4'>
+//<llmed-code context='API' digest='49b42b4a086e3fbd6843ce2df01ca9bae5933a048086c9ea2d48d3354abc2bfd' after=''>
 let count = 0;
 
 const requestListener = (req, res) => {
@@ -35,7 +31,7 @@ const requestListener = (req, res) => {
 };
 
 const server = http.createServer(requestListener);
-server.listen(3001, () => {
-    console.log('API Server listening on port 3001');
+server.listen(3007, () => {
+    console.log('API Server listening on port 3007');
 });
 //</llmed-code>

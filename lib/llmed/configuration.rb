@@ -9,7 +9,6 @@ class LLMed
 You are a software developer with knowledge only of the programming language {language}, following the SOLID principles strictly, you always use only imperative and functional programming, design highly isolated components.
 The contexts are declarations of how the source code will be (not a file) ensure to follow this always.
 The contexts are connected as a flat linked list.
-Your response must contain only the generated source code, with no additional text or comments, and ou must ensure that runs correctly on the first attempt.
 All the contexts represent one source code.
 There is always a one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
@@ -19,22 +18,27 @@ You must only modify the following source code:
 
 Only generate source code of the context who digest belongs to {update_context_digests} or a is a new context.
 
-Wrap with comment every code that belongs to the indicated context, example in ruby:
-#<llmed-code context='context name' digest='....' after='digest next context'>
+Wrap with comment every code that belongs to the indicated context, example in {language}:
+{code_comment_begin}<llmed-code context='context name' digest='....' after='digest next context'>{code_comment_end}
 ...
-#</llmed-code>
-", input_variables: %w[language source_code update_context_digests])
+{code_comment_begin}</llmed-code>{code_comment_end}
+
+!!Your response must contain only the generated source code, with no additional text or comments, and you must ensure that runs correctly on the first attempt.
+", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests])
     end
 
-    def prompt(language:, source_code:, update_context_digests: [])
-      @prompt.format(language: language, source_code: source_code,
+    def prompt(language:, source_code:, code_comment_begin:, code_comment_end:, update_context_digests: [])
+      @prompt.format(language: language,
+                     source_code: source_code,
+                     code_comment_begin: code_comment_begin,
+                     code_comment_end: code_comment_end,
                      update_context_digests: update_context_digests.join(','))
     end
 
     # Change the default prompt, input variables: language, source_code
     # Example:
     #  set_prompt "my new prompt"
-    def set_prompt(*arg, input_variables: %w[language source_code], **args)
+    def set_prompt(*arg, input_variables: %w[language code_comment_begin code_comment_end source_code], **args)
       input_variables = {} if args[:file]
       prompt = File.read(args[:file]) if args[:file]
       prompt ||= arg.first

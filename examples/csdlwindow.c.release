@@ -1,0 +1,116 @@
+//<llmed-code context='Application' digest='436a86c188263545a3b6bffdab9d31dcad0f7715e7aea285bdfb86b41417cd05' after=''>
+// LLMED-COMPILED
+#include <SDL2/SDL.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+#define CHAR_WIDTH 20
+#define CHAR_HEIGHT 40
+#define CHAR_SPACING 5
+
+void draw_char(SDL_Renderer* renderer, char c, int x, int y) {
+    switch (c) {
+        case 'h':
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y + CHAR_HEIGHT / 2);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+        case 'o':
+            SDL_RenderDrawLine(renderer, x, y, x + CHAR_WIDTH, y);
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+        case 'l':
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            break;
+        case 'a':
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y + CHAR_HEIGHT / 2);
+            break;
+        case 'm':
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y, x + CHAR_WIDTH / 2, y + CHAR_HEIGHT / 2);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH / 2, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+        case 'u':
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+        case 'n':
+            SDL_RenderDrawLine(renderer, x, y, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+        case 'd':
+            SDL_RenderDrawLine(renderer, x + CHAR_WIDTH, y, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x + CHAR_WIDTH, y + CHAR_HEIGHT / 2);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT / 2, x, y + CHAR_HEIGHT);
+            SDL_RenderDrawLine(renderer, x, y + CHAR_HEIGHT, x + CHAR_WIDTH, y + CHAR_HEIGHT);
+            break;
+    }
+}
+
+void draw_text(SDL_Renderer* renderer, const char* text, int x, int y) {
+    int len = strlen(text);
+    for (int i = 0; i < len; i++) {
+        draw_char(renderer, text[i], x + i * (CHAR_WIDTH + CHAR_SPACING), y);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    SDL_Window* window = NULL;
+    SDL_Renderer* renderer = NULL;
+    bool quit = false;
+    SDL_Event event;
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    window = SDL_CreateWindow("Hola Mundo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    if (window == NULL) {
+        SDL_Log("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL) {
+        SDL_Log("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    const char* text = "hola mundo";
+    int text_width = strlen(text) * (CHAR_WIDTH + CHAR_SPACING) - CHAR_SPACING;
+    int text_x = (WINDOW_WIDTH - text_width) / 2;
+    int text_y = (WINDOW_HEIGHT - CHAR_HEIGHT) / 2;
+
+    while (!quit) {
+        while (SDL_PollEvent(&event) != 0) {
+            if (event.type == SDL_QUIT) {
+                quit = true;
+            }
+        }
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderClear(renderer);
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        draw_text(renderer, text, text_x, text_y);
+
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
+//</llmed-code>

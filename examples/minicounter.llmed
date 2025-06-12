@@ -1,6 +1,6 @@
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
-application "MINI COUNTER", release: 1, language: :node, output_file: "minicounter.ollmed" do
+application "MINI COUNTER", release: 2, language: :node, output_file: "minicounter.ollmed" do
   context "dependencies" do
     <<-LLM
     * Must use only the standard/native library.
@@ -10,7 +10,7 @@ application "MINI COUNTER", release: 1, language: :node, output_file: "minicount
 
   context "API" do
     <<-LLM
-    API Server listening port 3001.
+    API Server listening port 3007.
     Expose the following endpoints:
     - GET /count
       - return the latest count.
@@ -21,12 +21,12 @@ application "MINI COUNTER", release: 1, language: :node, output_file: "minicount
   end
 end
 
-application "MINI COUNTER UI", release: 4, language: :html, output_file: "minicounterui.html" do
+application "MINI COUNTER UI", release: 5, language: :html, output_file: "minicounterui.html" do
   context("server api") { from_release("minicounter.ollmed.release") }
   context "UI" do
     <<-LLM
     Use tailwind.
-    Base of server api is 'http://localhost:3006'.
+    Base of server api is 'http://localhost:3011'.
 
     Show the latest counter using the endpoint '/count'.
     Has a button that calls '/count'..
