@@ -1,4 +1,4 @@
-set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+set_llm provider: :like_openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini', options: {uri_base: "https://api.openai.com/"}
 
 application "MINI COUNTER", release: 2, language: :node, output_file: "minicounter.ollmed" do
   context "dependencies" do

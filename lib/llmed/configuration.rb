@@ -52,10 +52,11 @@ Wrap with comment every code that belongs to the indicated context, example in {
       @language = language
     end
 
-    def set_llm(provider:, api_key:, model:)
+    def set_llm(provider:, api_key:, model:, options: {})
       @provider = provider
       @provider_api_key = api_key
       @provider_model = model
+      @provider_options = options
     end
 
     def language(main)
@@ -76,6 +77,12 @@ Wrap with comment every code that belongs to the indicated context, example in {
         LLMed::LLM::Anthropic.new(
           api_key: @provider_api_key,
           default_options: { temperature: 0.7, chat_model: @provider_model }
+        )
+      when :like_openai
+        LLMed::LLM::LikeOpenAI.new(
+          api_key: @provider_api_key,
+          default_options: { temperature: 0.7, chat_model: @provider_model },
+          llm_options: @provider_options
         )
       when :test
         LLMed::LLM::Test.new

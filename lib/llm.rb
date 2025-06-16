@@ -19,6 +19,9 @@ class LLMed
     Response = Struct.new(:provider, :model, :source_code, :duration_seconds, :total_tokens, keyword_init: true)
 
     class OpenAI
+
+      DEFAULT_URI_BASE = "https://api.openai.com/".freeze
+
       def initialize(**args)
         @llm = Langchain::LLM::OpenAI.new(**llm_arguments(args))
       end
@@ -45,10 +48,6 @@ class LLMed
 
       private
 
-      def llm_arguments(args)
-        args
-      end
-
       def provider
         :openai
       end
@@ -67,6 +66,18 @@ class LLMed
 
       def provider
         :anthropic
+      end
+    end
+
+    class LikeOpenAI < OpenAI
+      private
+
+      def llm_arguments(args)
+        args
+      end
+
+      def provider
+        :like_openai
       end
     end
 
