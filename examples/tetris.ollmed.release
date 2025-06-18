@@ -1,7 +1,7 @@
-#<llmed-code context='dependencies' digest='aee43ad4fd3355a24444718d6ad8ea1f763b1fd78cd1768c7833bd55d4ea0395' after='718c0d74d0d775ce3a25eff47b10192243c34d023608ef5ad381d7a30d9285b5'>
+#<llmed-code context='dependencies' digest='aee43ad4fd3355a24444718d6ad8ea1f763b1fd78cd1768c7833bd55d4ea0395' after='73cf5ab557762af929fbe6285dfec04d998888239cda5f17f48a2ea1365a2515'>
 import pygame
 #</llmed-code>
-#<llmed-code context='Entities' digest='718c0d74d0d775ce3a25eff47b10192243c34d023608ef5ad381d7a30d9285b5' after='f6bceacd7cd440d0a4311731e2c47d2b1d5c52e76f61ffe9539cd46f2d1fbe49'>
+#<llmed-code context='Entities' digest='73cf5ab557762af929fbe6285dfec04d998888239cda5f17f48a2ea1365a2515' after='89c9f4964ce765ca5c657dc66e31b91a25843c659106bd3274e446514bb37b2e'>
 class Grid:
     def __init__(self, width, height):
         self.width = width
@@ -12,7 +12,8 @@ class Shape:
     SHAPES = {
         'L': [(0, 0), (1, 0), (2, 0), (2, 1)],
         'E': [(0, 0), (1, 0), (2, 0), (0, 1)],
-        'T': [(0, 0), (1, 0), (2, 0), (1, 1)]
+        'T': [(0, 0), (1, 0), (2, 0), (1, 1)],
+        '|': [(0, 0), (0, 1), (0, 2), (0, 3)]
     }
 
     def __init__(self, kind, color):
@@ -20,6 +21,15 @@ class Shape:
         self.color = color
         self.position = [0, 0]
         self.pieces = [Piece(self, x, y) for x, y in self.SHAPES[kind]]
+
+    def rotate(self):
+        center_x, center_y = self.pieces[0].x, self.pieces[0].y
+        new_pieces = []
+        for piece in self.pieces:
+            x, y = piece.x - center_x, piece.y - center_y
+            new_x, new_y = -y, x
+            new_pieces.append(Piece(self, new_x + center_x, new_y + center_y))
+        self.pieces = new_pieces
 
 class Piece:
     def __init__(self, shape, x, y):
@@ -30,14 +40,18 @@ class Piece:
 class Player:
     def __init__(self, shape):
         self.shape = shape
+        self.removed_rows = 0
 
     def move_left(self):
         self.shape.position[0] -= 1
 
     def move_right(self):
         self.shape.position[0] += 1
+
+    def rotate_shape(self):
+        self.shape.rotate()
 #</llmed-code>
-#<llmed-code context='Logic' digest='f6bceacd7cd440d0a4311731e2c47d2b1d5c52e76f61ffe9539cd46f2d1fbe49' after='371c93dae000c12717c7c79703baf29f3a9f46bfc058e9f0f7c35ec229810512'>
+#<llmed-code context='Logic' digest='89c9f4964ce765ca5c657dc66e31b91a25843c659106bd3274e446514bb37b2e' after='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a'>
 import random
 
 class Game:
@@ -67,6 +81,7 @@ class Game:
         if self.check_collision():
             self.player.shape.position[1] -= 1
             self.place_shape()
+            self.clear_lines()
             self.generate_shape()
 
     def check_collision(self):
@@ -80,8 +95,22 @@ class Game:
         for piece in self.player.shape.pieces:
             x, y = piece.shape.position[0] + piece.x, piece.shape.position[1] + piece.y
             self.grid.cells[y][x] = piece
+
+    def clear_lines(self):
+        for y in range(self.grid.height):
+            if all(self.grid.cells[y][x] is not None for x in range(self.grid.width)):
+                for yy in range(y, 0, -1):
+                    self.grid.cells[yy] = self.grid.cells[yy - 1]
+                self.grid.cells[0] = [None for _ in range(self.grid.width)]
+                self.player.removed_rows += 1
 #</llmed-code>
-#<llmed-code context='Main' digest='371c93dae000c12717c7c79703baf29f3a9f46bfc058e9f0f7c35ec229810512' after='LLMED-COMPILED'>
+#<llmed-code context='Main' digest='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a' after='LLMED-COMPILED'>
+# Instructions to play
+print("Instructions:")
+print("Use left and right arrow keys to move the shape.")
+print("Use down arrow key to accelerate the shape.")
+print("Use space bar to rotate the shape 90 degrees clockwise.")
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((300, 600))
@@ -102,6 +131,10 @@ def main():
                     game.player.move_left()
                 if event.key == pygame.K_RIGHT:
                     game.player.move_right()
+                if event.key == pygame.K_DOWN:
+                    game.move_shape_down()
+                if event.key == pygame.K_SPACE:
+                    game.player.rotate_shape()
 
         game.update()
 
@@ -120,6 +153,10 @@ def main():
             for x in range(grid.width):
                 if grid.cells[y][x] is not None:
                     pygame.draw.rect(screen, grid.cells[y][x].shape.color, (x * 30, y * 30, 30, 30))
+
+        font = pygame.font.Font(None, 36)
+        text = font.render(f"Points: {game.player.removed_rows}", True, (255, 255, 255))
+        screen.blit(text, (10, 10))
 
         pygame.display.flip()
         clock.tick(5)

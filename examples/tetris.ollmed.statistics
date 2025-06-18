@@ -22,3 +22,17 @@
 {"inserted_at":1750090322,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":2,"total_tokens":3696,"duration_seconds":18}
 {"inserted_at":1750097804,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":3,"total_tokens":3789,"duration_seconds":22}
 {"inserted_at":1750097888,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":4,"total_tokens":3798,"duration_seconds":29}
+{"inserted_at":1750275930,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":5,"total_tokens":3809,"duration_seconds":19}
+{"inserted_at":1750275988,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":6,"total_tokens":3876,"duration_seconds":20}
+{"inserted_at":1750276101,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":7,"total_tokens":3990,"duration_seconds":20}
+{"inserted_at":1750276186,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":8,"total_tokens":4163,"duration_seconds":20}
+{"inserted_at":1750276305,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":9,"total_tokens":4315,"duration_seconds":21}
+{"inserted_at":1750276397,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":9,"total_tokens":4324,"duration_seconds":21}
+{"inserted_at":1750276508,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":10,"total_tokens":4353,"duration_seconds":21}
+{"inserted_at":1750276530,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":10,"total_tokens":3064,"duration_seconds":7}
+{"inserted_at":1750276606,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":10,"total_tokens":3125,"duration_seconds":7}
+{"inserted_at":1750276710,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":11,"total_tokens":4671,"duration_seconds":23}
+{"inserted_at":1750276838,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":11,"total_tokens":4668,"duration_seconds":32}
+{"inserted_at":1750276902,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":11,"total_tokens":4684,"duration_seconds":31}
+{"inserted_at":1750277106,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":12,"total_tokens":4753,"duration_seconds":22}
+{"inserted_at":1750277154,"name":"TETRIS","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":12,"total_tokens":4812,"duration_seconds":23}
