@@ -1,7 +1,7 @@
 #<llmed-code context='dependencies' digest='aee43ad4fd3355a24444718d6ad8ea1f763b1fd78cd1768c7833bd55d4ea0395' after='718c0d74d0d775ce3a25eff47b10192243c34d023608ef5ad381d7a30d9285b5'>
 import pygame
 #</llmed-code>
-#<llmed-code context='Entities' digest='718c0d74d0d775ce3a25eff47b10192243c34d023608ef5ad381d7a30d9285b5' after='3f9aa5fc6b9e2aed3c33852f386ec473ea59b81b96d5ee6884f5e700843cb054'>
+#<llmed-code context='Entities' digest='718c0d74d0d775ce3a25eff47b10192243c34d023608ef5ad381d7a30d9285b5' after='f6bceacd7cd440d0a4311731e2c47d2b1d5c52e76f61ffe9539cd46f2d1fbe49'>
 class Grid:
     def __init__(self, width, height):
         self.width = width
@@ -15,8 +15,9 @@ class Shape:
         'T': [(0, 0), (1, 0), (2, 0), (1, 1)]
     }
 
-    def __init__(self, kind):
+    def __init__(self, kind, color):
         self.kind = kind
+        self.color = color
         self.position = [0, 0]
         self.pieces = [Piece(self, x, y) for x, y in self.SHAPES[kind]]
 
@@ -36,7 +37,7 @@ class Player:
     def move_right(self):
         self.shape.position[0] += 1
 #</llmed-code>
-#<llmed-code context='Logic' digest='3f9aa5fc6b9e2aed3c33852f386ec473ea59b81b96d5ee6884f5e700843cb054' after='22507023adfe28e8021e0a837d59e7e670cd5e00d4743b64012661921a353b5a'>
+#<llmed-code context='Logic' digest='f6bceacd7cd440d0a4311731e2c47d2b1d5c52e76f61ffe9539cd46f2d1fbe49' after='371c93dae000c12717c7c79703baf29f3a9f46bfc058e9f0f7c35ec229810512'>
 import random
 
 class Game:
@@ -45,13 +46,15 @@ class Game:
         self.player = player
         self.game_over = False
         self.shapes = list(Shape.SHAPES.keys())
+        self.colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(len(self.shapes))]
 
     def start(self):
         self.generate_shape()
 
     def generate_shape(self):
         kind = random.choice(self.shapes)
-        new_shape = Shape(kind)
+        color = self.colors[self.shapes.index(kind)]
+        new_shape = Shape(kind, color)
         new_shape.position[0] = random.randint(0, self.grid.width - len(new_shape.pieces))
         self.player.shape = new_shape
 
@@ -78,7 +81,7 @@ class Game:
             x, y = piece.shape.position[0] + piece.x, piece.shape.position[1] + piece.y
             self.grid.cells[y][x] = piece
 #</llmed-code>
-#<llmed-code context='Main' digest='22507023adfe28e8021e0a837d59e7e670cd5e00d4743b64012661921a353b5a' after='LLMED-COMPILED'>
+#<llmed-code context='Main' digest='371c93dae000c12717c7c79703baf29f3a9f46bfc058e9f0f7c35ec229810512' after='LLMED-COMPILED'>
 def main():
     pygame.init()
     screen = pygame.display.set_mode((300, 600))
@@ -94,6 +97,11 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    game.player.move_left()
+                if event.key == pygame.K_RIGHT:
+                    game.player.move_right()
 
         game.update()
 
@@ -106,12 +114,12 @@ def main():
             for piece in game.player.shape.pieces:
                 x = (game.player.shape.position[0] + piece.x) * 30
                 y = (game.player.shape.position[1] + piece.y) * 30
-                pygame.draw.rect(screen, (255, 255, 255), (x, y, 30, 30))
+                pygame.draw.rect(screen, game.player.shape.color, (x, y, 30, 30))
 
         for y in range(grid.height):
             for x in range(grid.width):
                 if grid.cells[y][x] is not None:
-                    pygame.draw.rect(screen, (255, 255, 255), (x * 30, y * 30, 30, 30))
+                    pygame.draw.rect(screen, grid.cells[y][x].shape.color, (x * 30, y * 30, 30, 30))
 
         pygame.display.flip()
         clock.tick(5)

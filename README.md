@@ -14,24 +14,30 @@ What would happen if:
 In classic terms the LLM is the Compiler, Source Code is the Binary, the Programming language is Context Description.
 
 ```ruby
-set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
+set_llm provider: :like_openai, api_key: ENV['TOGETHERAI_API_KEY'], model: 'Qwen/Qwen2.5-Coder-32B-Instruct', options: {uri_base: 'https://api.together.xyz/v1'}
 
-application "hola mundo ruby", release: nil, language: :ruby, output_file: "holamundo-ruby.ollmed" do
-  # More stable context: if this changes, all subsequent context will be recompiled.
-  context "variables" do
+application "MINI COUNTER", release: nil, language: :node, output_file: "minicounter.ollmed" do
+  # Most stable context: if this changes, all subsequent context will be recompiled.
+  context "dependencies" do
     <<-LLM
-    Variable saludos de valor 'hola mundo'.
+    * Must use only the standard/native library.
+    * Must not use external dependencies.
     LLM
   end
 
-  # More inestable context: if this changes, only this context will be recompiled.
-  context "main" do
+  # Most inestable context: if this changes, only this context will be recompiled.
+  context "API" do
     <<-LLM
-    Mostrar al usuario la variable saludos.
+    API Server listening port 3007.
+    Expose the following endpoints:
+    - GET /count
+      - return the latest count.
+    - POST /count
+      - increase the count by 1.
+    add CORS endpoints.
     LLM
   end
 end
-```
 
 ## Programming flow
 

@@ -1,6 +1,6 @@
 set_llm provider: :like_openai, api_key: ENV['TOGETHERAI_API_KEY'], model: 'Qwen/Qwen2.5-Coder-32B-Instruct', options: {uri_base: 'https://api.together.xyz/v1'}
 
-application "TETRIS", release: 3, language: :python, output_file: "tetris.ollmed" do
+application "TETRIS", release: 5, language: :python, output_file: "tetris.ollmed" do
   context "dependencies" do
     <<-LLM
     * Use pygame.
@@ -34,6 +34,7 @@ application "TETRIS", release: 3, language: :python, output_file: "tetris.ollmed
     When the game starts, a grid is automatically generated.
     When the game starts, the first random shape is automatically generated at a random horizontal position at the top of the grid.
     On every iteration of the game, the shape moves from the top to the bottom of the screen. Once a piece touches the bottom or another piece, the shape stops moving and is stored as part of the stack. Then, a new shape is automatically generated at the top of the grid.
+    
     LLM
   end
 
@@ -42,6 +43,8 @@ application "TETRIS", release: 3, language: :python, output_file: "tetris.ollmed
     Draw a grid with a black background and white borders.
     Draw all the shapes.
     Each shape has unique random color.
+    Player using the keyboard can move the current shape from left to right.
+    Player using the keyboard (key down) can accelerate the current shape.
     LLM
   end
 end

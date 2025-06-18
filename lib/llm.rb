@@ -47,6 +47,9 @@ class LLMed
       end
 
       private
+      def llm_arguments(args)
+        args
+      end
 
       def provider
         :openai
