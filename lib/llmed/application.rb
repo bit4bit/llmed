@@ -68,6 +68,7 @@ class LLMed
         FileUtils.cp(output_file, release_main_source_code)
         @logger.info("APPLICATION #{@name} RELEASE FILE #{release_source_code}")
       elsif @release && !File.exist?(output_file) && File.exist?(release_main_source_code)
+        FileUtils.mkdir_p(File.dirname(output_file))
         FileUtils.cp(release_main_source_code, output_file)
         return
       end
