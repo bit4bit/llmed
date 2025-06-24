@@ -28,6 +28,18 @@ describe LLMed do
     expect(output.string).to including('LLMED external prompt')
   end
 
+  it 'compile application context from template' do
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+    @llmed.set_language 'ruby'
+    fake = StringIO.new
+    @llmed.application 'demo', output_file: fake do
+      context('main') { from_erb('./spec/hiworld.cllmed.erb') }
+    end
+    @llmed.compile
+
+    expect(fake.string).to including('hola mundo')
+  end
+
   it 'compile application skip context' do
     @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
     @llmed.set_language 'ruby'

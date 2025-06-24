@@ -1,5 +1,6 @@
 # Copyright 2025 Jovany Leandro G.C <bit4bit@riseup.net>
 # frozen_string_literal: true
+require 'erb'
 
 class LLMed
   class Context
@@ -45,6 +46,12 @@ class LLMed
     #  context("application") { from_file("application.cllmed") }
     def from_file(path)
       File.read(path)
+    end
+
+    # Example:
+    #  context("application") { from_erb("application.cllmed.erb") }
+    def from_erb(path)
+      ERB.new(File.read(path)).result(binding)
     end
 
     # Example:
