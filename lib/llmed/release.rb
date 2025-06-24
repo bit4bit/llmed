@@ -84,8 +84,6 @@ class LLMed
           if current_ctx.digest == new_ctx.after
             insertions << [idx, current_ctx.digest, new_ctx]
             break
-          elsif current_ctx.after.empty?
-            insertions << [idx, current_ctx.digest, new_ctx]
           end
         end
       end
@@ -108,13 +106,24 @@ class LLMed
       # insertions missed user contexts
       user_contexts.each do |name, digest|
         next if contexts.any? { |ctx| ctx.name == name }
-
-        new_ctx = ContextCode.new(name, digest, "\n", '')
+        code = release.context_by(name).code
+        new_ctx = ContextCode.new(name, digest, code, '')
         contexts.prepend(new_ctx)
         @changes << [:added, new_ctx]
       end
 
-      @contexts = contexts.sort {|a,b|
+      contexts_sorted = []
+      # prioritize user order
+      user_contexts.each do |name, _digest|
+        contexts.each do |ctx|
+          if ctx.name == name
+            contexts_sorted << ctx
+            break
+          end
+        end
+      end
+
+      @contexts = contexts_sorted.sort {|a,b|
         if a.digest == b.after
           1
         else

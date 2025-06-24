@@ -15,9 +15,11 @@ There is always a one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
 
 You must only modify the following source code:
+```
 {source_code}
+```
 
-Only generate source code of the context who digest belongs to {update_context_digests} or a is a new context.
+Only generate source code of the context who digest belongs to {update_context_digests}.
 
 Wrap with comment every code that belongs to the indicated context, example in {language}:
 {code_comment_begin}<llmed-code context='context name' digest='....' after='digest next context'>{code_comment_end}
