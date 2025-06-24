@@ -84,6 +84,8 @@ class LLMed
           if current_ctx.digest == new_ctx.after
             insertions << [idx, current_ctx.digest, new_ctx]
             break
+          elsif current_ctx.after.empty?
+            insertions << [idx, current_ctx.digest, new_ctx]
           end
         end
       end
@@ -112,7 +114,13 @@ class LLMed
         @changes << [:added, new_ctx]
       end
 
-      @contexts = contexts
+      @contexts = contexts.sort {|a,b|
+        if a.digest == b.after
+          1
+        else
+          0
+        end
+      }
       self
     end
 

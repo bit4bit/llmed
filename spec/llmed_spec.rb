@@ -91,53 +91,26 @@ describe LLMed do
     output_file = `mktemp`.chomp
     release_file = "#{output_file}.release"
 
-    # first iteration
-    @llmed.application 'demo', output_file: output_file do
+    @llmed.application 'demo', release: nil, output_file: output_file do
       context('main') { "Show to the user 'hola mundo'" }
     end
     @llmed.compile
 
-    # once agree create release
     @llmed.application 'demo', release: 1, output_file: output_file do
-      context('main') { "Show to the user 'hola mundo'" }
+      context('main') { "Show to the user 'hola mundo2'" }
     end
     @llmed.compile
-
-    expect(File.exist?(release_file))
     expect(File.read(release_file)).to including("puts 'hola mundo'")
-  end
 
-  it 'compile application connecting applications through output' do
-    tempfile = `mktemp`.chomp
-    tempfile_bye = `mktemp`.chomp
-    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
-    @llmed.set_language 'ruby'
-
-    @llmed.application 'main', output_file: tempfile do
-      context 'main' do
-        llm <<-LLM
-        Imprimir mensaje 'hola mundo'.
-        LLM
-      end
+    @llmed.application 'demo', release: 2, output_file: output_file do
+      context('main') { "Show to the user 'hola mundo2'" }
     end
-
-    @llmed.application 'demo', output_file: tempfile_bye do
-      context('source main') { from_source_code(tempfile) }
-
-      context('adicionar despedida') do
-        <<-LLM
-        Adicionar imprimir mensaje 'bye mundo'.
-        LLM
-      end
-    end
-
     @llmed.compile
-
-    expect(File.read(tempfile_bye)).to including("puts 'hola mundo'")
-    expect(File.read(tempfile_bye)).to including("puts 'bye mundo'")
+    expect(File.read(release_file)).not_to including("puts 'hola mundo'")
+    expect(File.read(release_file)).to including("puts 'hola mundo2'")
   end
 
-  it 'compile application including context' do
+  it 'compile application happy context' do
     tempfile = `mktemp`.chomp
     @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
     @llmed.set_language 'ruby'
@@ -148,6 +121,51 @@ describe LLMed do
     @llmed.compile
 
     expect(File.read(tempfile)).to including("puts 'hola mundo'")
+  end
+
+  it 'compile application adding next context' do
+    tempfile = `mktemp`.chomp
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+    @llmed.set_language 'ruby'
+    @llmed.application 'demo', output_file: tempfile do
+      context('show 1') { "Show to the user 'hola mundo1'" }
+    end
+    @llmed.compile
+    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
+
+    @llmed.application 'demo', release: 1, output_file: tempfile do
+      context('show 1') { "Show to the user 'hola mundo1'" }
+      context('show 2') { "Show to the user 'hola mundo2'" }
+    end
+    @llmed.compile
+    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
+    expect(File.read(tempfile)).to including("puts 'hola mundo2'")
+  end
+
+  it 'compile application adding middle context' do
+    tempfile = `mktemp`.chomp
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+    @llmed.set_language 'ruby'
+    @llmed.application 'demo', output_file: tempfile do
+      context('show 1') { "Show to the user 'hola mundo1'" }
+      context('show 3') { "Show to the user 'hola mundo3'" }
+    end
+    @llmed.compile
+    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
+    expect(File.read(tempfile)).to including("puts 'hola mundo3'")
+
+    @llmed.application 'demo', release: 1, output_file: tempfile do
+      context('show 1') { "Show to the user 'hola mundo1'" }
+      context('show 2') { "Show to the user 'hola mundo2'" }
+      context('show 3') { "Show to the user 'hola mundo3'" }
+    end
+    @llmed.compile
+
+    # expect order
+    File.read(tempfile).scan(/context='(.+?)'/m) => [show1, show2, show3]
+    expect(show1).to eq ['show 1']
+    expect(show2).to eq ['show 2']
+    expect(show3).to eq ['show 3']
   end
 
   it 'compile application with implicit language' do
