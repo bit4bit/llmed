@@ -21,8 +21,10 @@ class LLMed
     class OpenAI
 
       DEFAULT_URI_BASE = "https://api.openai.com/".freeze
+      MAX_TOKENS = 8192
 
       def initialize(**args)
+        @logger = args.delete(:logger)
         @llm = Langchain::LLM::OpenAI.new(**llm_arguments(args))
       end
 
@@ -37,7 +39,9 @@ class LLMed
         end
 
         start = Time.now
-        llm_response = @llm.chat(messages: messages)
+        llm_response = @llm.chat(messages: messages, max_tokens: MAX_TOKENS)
+        warn_token_limits(llm_response)
+
         stop = Time.now
         Response.new({ provider: provider,
                        model: @llm.chat_parameters[:model],
@@ -47,6 +51,12 @@ class LLMed
       end
 
       private
+      def warn_token_limits(llm_response)
+        if llm_response.completion_tokens >= MAX_TOKENS
+          @logger.warn("POSSIBLE INCONSISTENCY COMPLETED TOKENS REACHED MAX TOKENS #{MAX_TOKENS}")
+        end
+      end
+      
       def llm_arguments(args)
         args
       end
@@ -64,6 +74,7 @@ class LLMed
       private
 
       def llm_arguments(args)
+        @logger = args.delete(:logger)
         args.merge({ llm_options: { uri_base: 'https://api.anthropic.com/v1/' } })
       end
 

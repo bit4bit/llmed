@@ -3,7 +3,8 @@
 
 class LLMed
   class Configuration
-    def initialize
+    def initialize(logger:)
+      @logger = logger
       # Manual tested, pass 5 times execution
       @prompt = LLMed::LLM::Template.build(template: "
 You are a software developer with knowledge only of the programming language {language}, following the SOLID principles strictly, you always use only imperative and functional programming, design highly isolated components.
@@ -70,16 +71,19 @@ Wrap with comment every code that belongs to the indicated context, example in {
       case @provider
       when :openai
         LLMed::LLM::OpenAI.new(
+          logger: @logger,
           api_key: @provider_api_key,
-          default_options: { temperature: 0.7, chat_model: @provider_model }
+          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model }
         )
       when :anthropic
         LLMed::LLM::Anthropic.new(
+          logger: @logger,
           api_key: @provider_api_key,
-          default_options: { temperature: 0.7, chat_model: @provider_model }
+          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model }
         )
       when :like_openai
         LLMed::LLM::LikeOpenAI.new(
+          logger: @logger,
           api_key: @provider_api_key,
           default_options: { temperature: 0.7, chat_model: @provider_model },
           llm_options: @provider_options

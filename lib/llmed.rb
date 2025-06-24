@@ -17,7 +17,7 @@ class LLMed
     @logger = logger
     @applications = []
     @deploys = []
-    @configuration = Configuration.new
+    @configuration = Configuration.new(logger: logger)
     @release_dir = release_dir || output_dir
     @output_dir = output_dir
   end
