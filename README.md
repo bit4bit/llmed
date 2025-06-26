@@ -39,6 +39,8 @@ application "MINI COUNTER", release: nil, language: :node, output_file: "minicou
   end
 end
 
+```
+
 Since version 0.4.0, literate programming was introduced, and it is now possible to write code using a markdown-like syntax.
 
 ```md
