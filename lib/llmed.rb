@@ -33,7 +33,7 @@ class LLMed
   # changes default prompt
   def_delegator :@configuration, :set_prompt, :set_prompt
 
-  def application(name, output_file:, language: nil, release: nil, output_dir: nil, &block)
+  def application(name, output_file:, language: nil, release: nil, output_dir: nil, release_dir: nil, &block)
     @app = Application.new(
       name: name,
       language: @configuration.language(language),
@@ -41,7 +41,7 @@ class LLMed
       block: block,
       logger: @logger,
       release: release,
-      release_dir: @release_dir,
+      release_dir: release_dir || @release_dir,
       output_dir: output_dir || @output_dir
     )
     @applications << @app
@@ -94,3 +94,4 @@ require_relative 'llmed/context'
 require_relative 'llmed/release'
 require_relative 'llmed/application'
 require_relative 'llmed/deployment'
+require_relative 'llmed/literate_programming'
