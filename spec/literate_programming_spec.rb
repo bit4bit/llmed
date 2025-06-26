@@ -1,0 +1,43 @@
+# Copyright 2025 Jovany Leandro G.C <bit4bit@riseup.net>
+# frozen_string_literal: true
+
+require 'llmed'
+
+describe LLMed::LiterateProgramming do
+  before do
+    logger = Logger.new(STDOUT)
+    @llmed = LLMed.new(logger: logger, output_dir: '/tmp', release_dir: '/tmp')
+  end
+
+  it 'execute literate include resource' do
+    @llmed.set_language 'ruby'
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+
+    code = <<~CODE
+# Main
+
+[hiworld](./spec/hiworld.cllmed)
+
+CODE
+    fake = StringIO.new
+    LLMed::LiterateProgramming.execute(@llmed, 'test', code, output_file: fake)
+
+    @llmed.compile
+    expect(fake.string).to including('hola mundo')
+  end
+
+  it 'execute literate' do
+    @llmed.set_language 'ruby'
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+
+    code = <<~CODE
+# Main
+Show to the user 'hola mundo'.
+CODE
+    fake = StringIO.new
+    LLMed::LiterateProgramming.execute(@llmed, 'test', code, output_file: fake)
+
+    @llmed.compile
+    expect(fake.string).to including('hola mundo')
+  end
+end

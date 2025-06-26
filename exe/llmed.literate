@@ -1,0 +1,68 @@
+#!/bin/env ruby
+# Copyright 2025 Jovany Leandro G.C <bit4bit@riseup.net>
+# frozen_string_literal: true
+require 'optparse'
+require 'llmed'
+
+logger = Logger.new(STDERR)
+output_dir = './llmed-out'
+release_dir = output_dir
+language = 'ruby'
+provider = :like_openai
+provider_api_key = ENV.fetch('LLMED_PROVIDER_API_KEY', nil)
+provider_model = ENV.fetch('LLMED_PROVIDER_MODEL', 'Qwen/Qwen2.5-Coder-32B-Instruct')
+provider_uri_base = ENV.fetch('LLMED_PROVIDER_URI_BASE', 'https://api.together.xyz/v1')
+output_file = 'a.out.ollmed'
+
+template = <<~TMP
+# Main
+
+Show to user 'hi world!'.
+TMP
+
+OptionParser.new do |parser|
+  parser.banner = "Usage: llmed.literate [options] <application file .llmed.literate or stdin>"
+  parser.on_tail("-h", "--help", "Show this message") do
+    puts parser
+    puts "\n# Website\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed"
+    puts "\n# Examples\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed/examples"
+    puts "Environment vars:\nLLMED_PROVIDER_API_KEY\nLLMED_PROVIDER_MODEL=#{provider_model}\nLLMED_PROVIDER_URI_BASE=#{provider_uri_base}"
+    exit
+  end
+
+  parser.on('-t', '--template PATH', String, 'Create template') do |path|
+    File.write path, template
+    exit
+  end
+
+  parser.on('-c', '--compile PATH', String, 'Output compiled') do |path|
+    output_file = path
+  end
+
+  parser.on('--output-dir DIR', String) do |path|
+    output_dir = path
+  end
+
+  parser.on('--release-dir DIR', String) do |path|
+    release_dir = path
+  end
+
+  parser.on('-l', '--language LANGUAGE', String, 'Programming Language: ruby, python') do |lang|
+    language = lang
+  end
+
+  parser.on('-q', '--quiet') do
+    logger.level = :error
+  end
+end.parse!
+
+source_code = ARGF.read
+if ARGF.respond_to?(:path)
+  release_dir = File.dirname(ARGF.path)
+end
+
+llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
+llmed.set_language language
+llmed.set_llm provider: provider, api_key: provider_api_key, model: provider_model, options: {uri_base: provider_uri_base}
+LLMed::LiterateProgramming.execute(llmed, 'literate_programming', source_code, output_file: output_file)
+llmed.compile()

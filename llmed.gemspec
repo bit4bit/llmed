@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'llmed'
-  s.version     = '0.3.19'
+  s.version     = '0.4.0'
   s.licenses    = ['GPL-3.0']
   s.summary = "LLM Execution Development"
   s.description     = "Use this 'compiler' to build software using LLMs in a controlled way. In classical terms, the LLM is the compiler, the context description is the programming language, and the generated output is the binary."
@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   
   s.bindir = 'exe'
   s.executables << 'llmed'
+  s.executables << 'llmed.literate'
 
   s.required_ruby_version     = ">= 3.0.0"
   s.required_rubygems_version = ">= 1.3.7"
