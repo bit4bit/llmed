@@ -6,7 +6,7 @@ application "Literate Programming Markdown", release: 1, language: :ruby, output
     class LLMed::LiterateProgramming::Markdown
       def parse(input)
         Here implementation using the rspec tests as example:
-        #{File.read('spec/literate_programming_spec.rb')}
+        #{File.read('spec/literate_programming_markdown_spec.rb')}
       end
     end
     LLM
