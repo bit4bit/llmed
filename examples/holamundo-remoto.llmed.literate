@@ -1,0 +1,6 @@
+# Main
+
+Given the source code:
+[ruby](https://raw.githubusercontent.com/bit4bit/llmed/refs/heads/main/examples/holamundo.llmed)
+
+Add a new context to show 'Nice'.

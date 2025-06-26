@@ -39,6 +39,26 @@ application "MINI COUNTER", release: nil, language: :node, output_file: "minicou
   end
 end
 
+Since version 0.4.0, literate programming was introduced, and it is now possible to write code using a markdown-like syntax.
+
+```md
+# Dependencies
+
+* Must use only the standard/native library.
+* Must not use external dependencies.
+
+# API
+
+API Server listening port 3007.
+Expose the following endpoints:
+ - GET /count
+   - return the latest count.
+ - POST /count
+   - increase the count by 1.
+add CORS endpoints.
+```
+then compile using command `llmed.literate`.
+
 ## Programming flow
 
 * Cycle
