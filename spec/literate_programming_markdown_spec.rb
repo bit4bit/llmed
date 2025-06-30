@@ -4,6 +4,31 @@
 require 'llmed'
 
 describe LLMed::LiterateProgramming::Markdown do
+  it 'parse directive enviroment' do
+    md = LLMed::LiterateProgramming::Markdown.new()
+    expect(md.parse("#!environment release 1
+#!environment model open-source
+
+# Context A
+Contenido
+
+")).to eq  [
+         {type: :context,
+          title: "_default",
+          content: [
+            {type: :environment, name: "release", value: "1"},
+            {type: :environment, name: "model", value: "open-source"},
+            {type: :string, content: "\n"}
+          ]},
+         {type: :context,
+          title: "Context A",
+          content: [
+            {type: :string, content: "Contenido\n"},
+            {type: :string, content: "\n"}
+          ]}
+       ]
+  end
+
   it 'parse comment' do
     md = LLMed::LiterateProgramming::Markdown.new()
     expect(md.parse("#% Comment

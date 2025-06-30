@@ -57,7 +57,7 @@ class LLMed
     end
 
     def prepare
-      @logger.info("APPLICATION #{@name} COMPILING FOR #{@language}")
+      @logger.info("APPLICATION #{@name} COMPILING FOR #{@language} RELEASE #{@release}")
       return unless @output_file.is_a?(String)
       return unless @release
 

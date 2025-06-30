@@ -1,6 +1,6 @@
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
-application "Literate Programming Markdown", release: 1, language: :ruby, output_file: "markdown.rb", output_dir: "./lib/llmed/literate_programming/", release_dir: "./lib/llmed/literate_programming/" do
+application "Literate Programming Markdown", release: 2, language: :ruby, output_file: "markdown.rb", output_dir: "./lib/llmed/literate_programming/", release_dir: "./lib/llmed/literate_programming/" do
   context "Library LLMed::LiterateProgramming::Markdown" do
     <<-LLM
     class LLMed::LiterateProgramming::Markdown

@@ -26,3 +26,12 @@
 {"inserted_at":1750950487,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o","release":1,"total_tokens":1575,"duration_seconds":5}
 {"inserted_at":1750950574,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o","release":1,"total_tokens":1571,"duration_seconds":5}
 {"inserted_at":1750948249,"name":"Literate Programming Markdown","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":null,"total_tokens":825,"duration_seconds":6}
+{"inserted_at":1751277383,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2438,"duration_seconds":17}
+{"inserted_at":1751277514,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2438,"duration_seconds":19}
+{"inserted_at":1751277672,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2417,"duration_seconds":18}
+{"inserted_at":1751277767,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1833,"duration_seconds":9}
+{"inserted_at":1751278515,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2416,"duration_seconds":19}
+{"inserted_at":1751278535,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2396,"duration_seconds":13}
+{"inserted_at":1751278560,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2416,"duration_seconds":18}
+{"inserted_at":1751278598,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":2416,"duration_seconds":15}
+{"inserted_at":1751278618,"name":"Literate Programming Markdown","provider":"openai","model":"gpt-4o","release":1,"total_tokens":1830,"duration_seconds":6}

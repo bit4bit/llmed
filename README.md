@@ -44,6 +44,11 @@ end
 Since version 0.4.0, literate programming was introduced, and it is now possible to write code using a markdown-like syntax.
 
 ```md
+#!language ruby
+#% increase release once you agree with the change
+#!environment release
+#!environment output_file minicounter.rb
+
 # Dependencies
 
 * Must use only the standard/native library.

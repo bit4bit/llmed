@@ -1,4 +1,4 @@
-#<llmed-code context='Library LLMed::LiterateProgramming::Markdown' digest='18aa5391a8a334f24a80542620a277bb9c085762cb88b7dbcafa26a532a48027' after=''>
+#<llmed-code context='Library LLMed::LiterateProgramming::Markdown' digest='9c0e3f61ab4cdc3c56c29230a800487dd1a7ef0d929c843fd2461907d0831ab2' after=''>
 class LLMed::LiterateProgramming::Markdown
   def parse(input)
     contexts = []
@@ -12,6 +12,8 @@ class LLMed::LiterateProgramming::Markdown
         current_context[:content] << { type: :link, content: Regexp.last_match(1), reference: Regexp.last_match(2) }
       elsif line.strip =~ /^#% (.+)$/
         current_context[:content] << { type: :comment, content: Regexp.last_match(1) + "\n" }
+      elsif line.strip =~ /^#!environment\s+(\w+)\s+(.+)$/
+        current_context[:content] << { type: :environment, name: Regexp.last_match(1), value: Regexp.last_match(2) }
       else
         current_context[:content] << { type: :string, content: line }
       end
