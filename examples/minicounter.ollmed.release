@@ -1,36 +1,32 @@
-//<llmed-code context='dependencies' digest='d1c3c63de4da6a330a1a3975e280f1a69515e1bf34bbb8b11db37e40ac5bebd4' after=''>
-// No external dependencies are used, only standard/native libraries.
+//<llmed-code context='dependencies' digest='d1c3c63de4da6a330a1a3975e280f1a69515e1bf34bbb8b11db37e40ac5bebd4' after='49b42b4a086e3fbd6843ce2df01ca9bae5933a048086c9ea2d48d3354abc2bfd'>
+// No external dependencies are used
 //</llmed-code>
+
 //<llmed-code context='API' digest='49b42b4a086e3fbd6843ce2df01ca9bae5933a048086c9ea2d48d3354abc2bfd' after=''>
+const http = require('http');
+
 let count = 0;
 
 const requestListener = (req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-
-    // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json');
 
-    if (url.pathname === '/count') {
-        if (req.method === 'GET') {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ count }));
-        } else if (req.method === 'POST') {
-            count += 1;
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ count }));
-        } else {
-            res.writeHead(405);
-            res.end();
-        }
+    if (req.method === 'GET' && req.url === '/count') {
+        res.writeHead(200);
+        res.end(JSON.stringify({ count }));
+    } else if (req.method === 'POST' && req.url === '/count') {
+        count += 1;
+        res.writeHead(200);
+        res.end(JSON.stringify({ count }));
     } else {
         res.writeHead(404);
-        res.end();
+        res.end(JSON.stringify({ message: 'Not Found' }));
     }
 };
 
 const server = http.createServer(requestListener);
+
 server.listen(3007, () => {
     console.log('API Server listening on port 3007');
 });

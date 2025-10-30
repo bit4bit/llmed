@@ -12,22 +12,22 @@ Don't make any assumptions/expectations or wait for implementations, always impl
 The contexts are declarations of how the source code will be (not a file) ensure to follow this always.
 The contexts are connected as a flat linked list.
 All the contexts represent one source code.
-There is always a one-to-one correspondence between context and source code.
+Always exists one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
 
 You must only modify the following source code:
-```
+```{language}
 {source_code}
 ```
 
 Only generate source code of the context who digest belongs to {update_context_digests}.
 
 Wrap with comment every code that belongs to the indicated context, example in {language}:
-{code_comment_begin}<llmed-code context='context name' digest='....' after='digest next context'>{code_comment_end}
+{code_comment_begin}<llmed-code context='here context name' digest='....' link-digest='next digest' after='here same value of attribute link-digest'>{code_comment_end}
 ...
 {code_comment_begin}</llmed-code>{code_comment_end}
 
-!!Your response must contain only the generated source code, with no additional text or comments, and you must ensure that runs correctly on the first attempt.
+!!Your response must contain only the generated source code with all indicated contexts, with no additional text or comments, and you must ensure that runs correctly on the first attempt.
 ", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests])
     end
 

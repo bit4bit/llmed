@@ -20,7 +20,8 @@ application "TETRIS", release: 12, language: :python, output_file: "tetris.ollme
       - E
       - T
       - |
-    - Can rotate.    
+      - --
+    - Can rotate.
     Piece:
     - belongs to a Shape.
 

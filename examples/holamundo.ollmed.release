@@ -1,0 +1,8 @@
+#<llmed-code context='variables' digest='a296da0cf9ced1f00fd16af58e8e5f931d9174e6e7eb6b28781be0e2733899a7' link-digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993'>
+saludos = 'hola mundoa'
+#</llmed-code>
+
+#<llmed-code context='main' digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993' link-digest=''>
+puts saludos
+puts Time.now
+#</llmed-code>

@@ -1,37 +1,29 @@
-<!--<llmed-code context='server api' digest='bb200fc98dba7b60e28cffc8878f9c3a7dd9ca5868e3e9aab392da3ad2e3cd93' after=''>-->
-<!--</llmed-code>-->
-<!--<llmed-code context='UI' digest='4bf197fd6692c1e98041bae105bf95ccf66b4b3f7c093b379305d98d3df0e5bc' after='4bf197fd6692c1e98041bae105bf95ccf66b4b3f7c093b379305d98d3df0e5bc'>-->
+<!--<llmed-code context='UI' digest='8c62901459516c4f96cd59066b4085b9a10bfcbd2a3b59808c222ee50999237d' after=''>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <title>Counter</title>
+    <title>Counter UI</title>
 </head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="text-center">
-        <h1 class="text-2xl font-bold mb-4">Counter: <span id="count">0</span></h1>
-        <button id="incrementButton" class="px-4 py-2 bg-blue-500 text-white rounded">Increment</button>
-    </div>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <h1 class="text-4xl font-bold mb-4">Counter</h1>
+    <div id="counter" class="text-2xl mb-4">Count: 0</div>
+    <button id="fetch-button" class="px-4 py-2 bg-blue-500 text-white rounded">Fetch Count</button>
 
     <script>
-        const countDisplay = document.getElementById('count');
-        const incrementButton = document.getElementById('incrementButton');
-
-        const updateCount = async () => {
-            const response = await fetch('http://localhost:3010/count');
-            const data = await response.json();
-            countDisplay.textContent = data.count;
+        const fetchCount = async () => {
+            const response = await fetch('http://localhost:3011/count');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('counter').innerText = `Count: ${data.count}`;
+            } else {
+                console.error('Failed to fetch count');
+            }
         };
 
-        incrementButton.addEventListener('click', async () => {
-            await fetch('http://localhost:3010/count', { method: 'POST' });
-            updateCount();
-        });
-
-        // Initial count fetch
-        updateCount();
+        document.getElementById('fetch-button').addEventListener('click', fetchCount);
     </script>
 </body>
 </html>

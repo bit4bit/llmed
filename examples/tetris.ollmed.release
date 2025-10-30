@@ -1,6 +1,8 @@
 #<llmed-code context='dependencies' digest='aee43ad4fd3355a24444718d6ad8ea1f763b1fd78cd1768c7833bd55d4ea0395' after='73cf5ab557762af929fbe6285dfec04d998888239cda5f17f48a2ea1365a2515'>
 import pygame
+import random
 #</llmed-code>
+
 #<llmed-code context='Entities' digest='73cf5ab557762af929fbe6285dfec04d998888239cda5f17f48a2ea1365a2515' after='89c9f4964ce765ca5c657dc66e31b91a25843c659106bd3274e446514bb37b2e'>
 class Grid:
     def __init__(self, width, height):
@@ -10,158 +12,173 @@ class Grid:
 
 class Shape:
     SHAPES = {
-        'L': [(0, 0), (1, 0), (2, 0), (2, 1)],
-        'E': [(0, 0), (1, 0), (2, 0), (0, 1)],
-        'T': [(0, 0), (1, 0), (2, 0), (1, 1)],
-        '|': [(0, 0), (0, 1), (0, 2), (0, 3)]
+        'L': [[1, 0], [1, 0], [1, 1]],
+        'E': [[1, 1], [1, 1]],
+        'T': [[0, 1, 0], [1, 1, 1]],
+        '|': [[1], [1], [1], [1]]
     }
 
     def __init__(self, kind, color):
         self.kind = kind
         self.color = color
-        self.position = [0, 0]
-        self.pieces = [Piece(self, x, y) for x, y in self.SHAPES[kind]]
+        self.shape = self.SHAPES[kind]
+        self.rotation = 0
 
     def rotate(self):
-        center_x, center_y = self.pieces[0].x, self.pieces[0].y
-        new_pieces = []
-        for piece in self.pieces:
-            x, y = piece.x - center_x, piece.y - center_y
-            new_x, new_y = -y, x
-            new_pieces.append(Piece(self, new_x + center_x, new_y + center_y))
-        self.pieces = new_pieces
+        self.rotation = (self.rotation + 1) % 4
+        self.shape = [list(row) for row in zip(*self.shape[::-1])]
 
 class Piece:
-    def __init__(self, shape, x, y):
-        self.shape = shape
+    def __init__(self, x, y, shape):
         self.x = x
         self.y = y
+        self.shape = shape
 
 class Player:
-    def __init__(self, shape):
-        self.shape = shape
+    def __init__(self):
         self.removed_rows = 0
 
-    def move_left(self):
-        self.shape.position[0] -= 1
+    def increase_points(self, rows):
+        self.removed_rows += rows
+#</llmed-code>
 
-    def move_right(self):
-        self.shape.position[0] += 1
+#<llmed-code context='Logic' digest='89c9f4964ce765ca5c657dc66e31b91a25843c659106bd3274e446514bb37b2e' after='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a'>
+class Tetris:
+    SHAPES = ['L', 'E', 'T', '|']
+    COLORS = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+
+    def __init__(self, grid_width, grid_height):
+        self.grid = Grid(grid_width, grid_height)
+        self.player = Player()
+        self.current_shape = self.get_new_shape()
+        self.game_over = False
+
+    def get_new_shape(self):
+        shape_kind = random.choice(self.SHAPES)
+        color = random.choice(self.COLORS)
+        return Piece(random.randint(0, self.grid.width - len(Shape.SHAPES[shape_kind][0])), 0, Shape(shape_kind, color))
+
+    def move_shape(self, dx, dy):
+        self.current_shape.x += dx
+        self.current_shape.y += dy
 
     def rotate_shape(self):
-        self.shape.rotate()
-#</llmed-code>
-#<llmed-code context='Logic' digest='89c9f4964ce765ca5c657dc66e31b91a25843c659106bd3274e446514bb37b2e' after='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a'>
-import random
+        prev_rotation = self.current_shape.shape.rotation
+        self.current_shape.shape.rotate()
+        if not self.is_valid_position():
+            self.current_shape.shape.rotation = prev_rotation
+            self.current_shape.shape.shape = [list(row) for row in zip(*self.current_shape.shape.shape[::-1])]
 
-class Game:
-    def __init__(self, grid, player):
-        self.grid = grid
-        self.player = player
-        self.game_over = False
-        self.shapes = list(Shape.SHAPES.keys())
-        self.colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(len(self.shapes))]
+    def is_valid_position(self):
+        for y, row in enumerate(self.current_shape.shape.shape):
+            for x, cell in enumerate(row):
+                if cell and (self.current_shape.x + x < 0 or self.current_shape.x + x >= self.grid.width or
+                            self.current_shape.y + y >= self.grid.height or
+                            self.grid.cells[self.current_shape.y + y][self.current_shape.x + x]):
+                    return False
+        return True
 
-    def start(self):
-        self.generate_shape()
+    def fix_shape(self):
+        for y, row in enumerate(self.current_shape.shape.shape):
+            for x, cell in enumerate(row):
+                if cell:
+                    self.grid.cells[self.current_shape.y + y][self.current_shape.x + x] = self.current_shape.shape.color
+        self.remove_full_rows()
+        self.current_shape = self.get_new_shape()
+        if not self.is_valid_position():
+            self.game_over = True
 
-    def generate_shape(self):
-        kind = random.choice(self.shapes)
-        color = self.colors[self.shapes.index(kind)]
-        new_shape = Shape(kind, color)
-        new_shape.position[0] = random.randint(0, self.grid.width - len(new_shape.pieces))
-        self.player.shape = new_shape
+    def remove_full_rows(self):
+        lines_cleared = 0
+        for y, row in enumerate(self.grid.cells):
+            if all(row):
+                del self.grid.cells[y]
+                self.grid.cells.insert(0, [None for _ in range(self.grid.width)])
+                lines_cleared += 1
+        self.player.increase_points(lines_cleared)
 
     def update(self):
-        if not self.game_over:
-            self.move_shape_down()
-
-    def move_shape_down(self):
-        self.player.shape.position[1] += 1
-        if self.check_collision():
-            self.player.shape.position[1] -= 1
-            self.place_shape()
-            self.clear_lines()
-            self.generate_shape()
-
-    def check_collision(self):
-        for piece in self.player.shape.pieces:
-            x, y = piece.shape.position[0] + piece.x, piece.shape.position[1] + piece.y
-            if y >= self.grid.height or self.grid.cells[y][x] is not None:
-                return True
-        return False
-
-    def place_shape(self):
-        for piece in self.player.shape.pieces:
-            x, y = piece.shape.position[0] + piece.x, piece.shape.position[1] + piece.y
-            self.grid.cells[y][x] = piece
-
-    def clear_lines(self):
-        for y in range(self.grid.height):
-            if all(self.grid.cells[y][x] is not None for x in range(self.grid.width)):
-                for yy in range(y, 0, -1):
-                    self.grid.cells[yy] = self.grid.cells[yy - 1]
-                self.grid.cells[0] = [None for _ in range(self.grid.width)]
-                self.player.removed_rows += 1
+        self.move_shape(0, 1)
+        if not self.is_valid_position():
+            self.move_shape(0, -1)
+            self.fix_shape()
 #</llmed-code>
-#<llmed-code context='Main' digest='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a' after='LLMED-COMPILED'>
-# Instructions to play
-print("Instructions:")
-print("Use left and right arrow keys to move the shape.")
-print("Use down arrow key to accelerate the shape.")
-print("Use space bar to rotate the shape 90 degrees clockwise.")
 
+#<llmed-code context='Main' digest='9e9089145836632f04dd80db3cc8b3255026e15d130ba50442f88a24d4f9269a' after='LLMED-COMPILED'>
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((300, 600))
+    screen_width, screen_height = 300, 600
+    grid_width, grid_height = 10, 20
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption("Tetris")
     clock = pygame.time.Clock()
+    tetris = Tetris(grid_width, grid_height)
+    fall_time = 0
+    fall_speed = 500  # milliseconds
 
-    grid = Grid(10, 20)
-    player = Player(None)
-    game = Game(grid, player)
-    game.start()
+    font = pygame.font.Font(None, 36)
 
-    running = True
-    while running:
+    print("Instructions:")
+    print("Use left and right arrow keys to move the shape.")
+    print("Use down arrow key to accelerate the shape.")
+    print("Use space key to rotate the shape 90 degrees clockwise.")
+
+    while not tetris.game_over:
+        screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                tetris.game_over = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    game.player.move_left()
-                if event.key == pygame.K_RIGHT:
-                    game.player.move_right()
-                if event.key == pygame.K_DOWN:
-                    game.move_shape_down()
-                if event.key == pygame.K_SPACE:
-                    game.player.rotate_shape()
+                    tetris.move_shape(-1, 0)
+                    if not tetris.is_valid_position():
+                        tetris.move_shape(1, 0)
+                elif event.key == pygame.K_RIGHT:
+                    tetris.move_shape(1, 0)
+                    if not tetris.is_valid_position():
+                        tetris.move_shape(-1, 0)
+                elif event.key == pygame.K_DOWN:
+                    tetris.move_shape(0, 1)
+                    if not tetris.is_valid_position():
+                        tetris.move_shape(0, -1)
+                elif event.key == pygame.K_SPACE:
+                    tetris.rotate_shape()
 
-        game.update()
+        fall_time += clock.get_rawtime()
+        clock.tick()
 
-        screen.fill((0, 0, 0))
-        for y in range(grid.height):
-            for x in range(grid.width):
-                pygame.draw.rect(screen, (255, 255, 255), (x * 30, y * 30, 30, 30), 1)
+        if fall_time > fall_speed:
+            fall_time = 0
+            tetris.update()
 
-        if game.player.shape:
-            for piece in game.player.shape.pieces:
-                x = (game.player.shape.position[0] + piece.x) * 30
-                y = (game.player.shape.position[1] + piece.y) * 30
-                pygame.draw.rect(screen, game.player.shape.color, (x, y, 30, 30))
-
-        for y in range(grid.height):
-            for x in range(grid.width):
-                if grid.cells[y][x] is not None:
-                    pygame.draw.rect(screen, grid.cells[y][x].shape.color, (x * 30, y * 30, 30, 30))
-
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Points: {game.player.removed_rows}", True, (255, 255, 255))
-        screen.blit(text, (10, 10))
+        draw_grid(screen, tetris.grid)
+        draw_shape(screen, tetris.current_shape)
+        draw_player_info(screen, tetris.player)
 
         pygame.display.flip()
-        clock.tick(5)
 
     pygame.quit()
+
+def draw_grid(screen, grid):
+    cell_size = 30
+    for y, row in enumerate(grid.cells):
+        for x, cell in enumerate(row):
+            if cell:
+                pygame.draw.rect(screen, cell, (x * cell_size, y * cell_size, cell_size, cell_size))
+            pygame.draw.rect(screen, (255, 255, 255), (x * cell_size, y * cell_size, cell_size, cell_size), 1)
+
+def draw_shape(screen, shape):
+    cell_size = 30
+    for y, row in enumerate(shape.shape.shape):
+        for x, cell in enumerate(row):
+            if cell:
+                pygame.draw.rect(screen, shape.shape.color, ((shape.x + x) * cell_size, (shape.y + y) * cell_size, cell_size, cell_size))
+                pygame.draw.rect(screen, (255, 255, 255), ((shape.x + x) * cell_size, (shape.y + y) * cell_size, cell_size, cell_size), 1)
+
+def draw_player_info(screen, player):
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"Points: {player.removed_rows}", True, (255, 255, 255))
+    screen.blit(text, (10, 10))
 
 if __name__ == "__main__":
     main()

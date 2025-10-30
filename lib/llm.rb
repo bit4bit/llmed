@@ -56,7 +56,7 @@ class LLMed
           @logger.warn("POSSIBLE INCONSISTENCY COMPLETED TOKENS REACHED MAX TOKENS #{MAX_TOKENS}")
         end
       end
-      
+
       def llm_arguments(args)
         args
       end
