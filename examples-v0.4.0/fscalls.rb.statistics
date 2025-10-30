@@ -31,3 +31,6 @@
 {"inserted_at":1751400388,"name":"literate_programming","provider":"like_openai","model":"gpt-4o-mini","release":null,"total_tokens":2096,"duration_seconds":12}
 {"inserted_at":1751400411,"name":"literate_programming","provider":"like_openai","model":"gpt-4o-mini","release":null,"total_tokens":1917,"duration_seconds":8}
 {"inserted_at":1751400504,"name":"literate_programming","provider":"like_openai","model":"gpt-4o-mini","release":null,"total_tokens":1916,"duration_seconds":14}
+{"inserted_at":1761858780,"name":"literate_programming","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":null,"total_tokens":2348,"duration_seconds":13}
+{"inserted_at":1761860786,"name":"literate_programming","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":null,"total_tokens":2456,"duration_seconds":10}
+{"inserted_at":1761861156,"name":"literate_programming","provider":"like_openai","model":"Qwen/Qwen2.5-Coder-32B-Instruct","release":null,"total_tokens":2531,"duration_seconds":13}

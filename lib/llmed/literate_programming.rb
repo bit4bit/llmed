@@ -2,9 +2,10 @@ require 'open-uri'
 
 class LLMed
   class LiterateProgramming
-    def self.execute(llmed, application_name, code, **application_args)
+    def self.execute(code, **application_args)
       md = LLMed::LiterateProgramming::Markdown.new()
       contexts = []
+      environment = {}
 
       md.parse(code).each do |item|
         context = {}
@@ -17,12 +18,14 @@ class LLMed
               value = item_content[:value].strip
               if [:language, :release, :output_file, :output_dir, :release_dir].include?(name) && !value.empty?
                 application_args[name] = value
+              else
+                environment[name] = value
               end
             end
           end
           next
         end
-        
+
         case item[:type]
         when :context
           context[:title] = item[:title]
@@ -42,11 +45,7 @@ class LLMed
         end
       end
 
-      llmed.application(application_name, **application_args) do
-        contexts.each do |lcontext|
-          context(lcontext[:title]) { lcontext[:content] }
-        end
-      end
+      yield contexts, application_args, environment
     end
   end
 end

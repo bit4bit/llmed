@@ -20,7 +20,13 @@ describe LLMed::LiterateProgramming do
 
 CODE
     fake = StringIO.new
-    LLMed::LiterateProgramming.execute(@llmed, 'test', code, output_file: fake)
+    LLMed::LiterateProgramming.execute(code, output_file: fake) do |contexts, application_args, environment|
+      @llmed.application('test', **application_args) do
+        contexts.each do |lcontext|
+          context(lcontext[:title]) { lcontext[:content] }
+        end
+      end
+    end
 
     @llmed.compile
     expect(fake.string).to including('hola mundo')
@@ -35,7 +41,13 @@ CODE
 Show to the user 'hola mundo'.
 CODE
     fake = StringIO.new
-    LLMed::LiterateProgramming.execute(@llmed, 'test', code, output_file: fake)
+    LLMed::LiterateProgramming.execute(code, output_file: fake) do |contexts, application_args, environment|
+      @llmed.application('test', **application_args) do
+        contexts.each do |lcontext|
+          context(lcontext[:title]) { lcontext[:content] }
+        end
+      end
+    end
 
     @llmed.compile
     expect(fake.string).to including('hola mundo')

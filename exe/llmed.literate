@@ -9,12 +9,22 @@ output_dir = './llmed-out'
 release_dir = output_dir
 language = 'ruby'
 provider = :like_openai
-provider_api_key = ENV.fetch('LLMED_PROVIDER_API_KEY', nil)
+provider_api_key = ENV.fetch('LLMED_PROVIDER_API_KEY', '')
 provider_model = ENV.fetch('LLMED_PROVIDER_MODEL', 'Qwen/Qwen2.5-Coder-32B-Instruct')
 provider_uri_base = ENV.fetch('LLMED_PROVIDER_URI_BASE', 'https://api.together.xyz/v1')
 output_file = 'a.out.ollmed'
 
 template = <<~TMP
+#% Minimal example
+#% llm_provider : like_openai | openai | anthropic
+#!environment llm_provider like_openai
+#% llm_provider_model : depends provider
+#!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
+#% llm_provider_model : depends provider
+#!environment llm_provider_uri_base https://api.together.xyz/v1
+#!environment language ruby
+#!environment output_file demo.rb
+
 # Main
 
 Show to user 'hi world!'.
@@ -26,7 +36,26 @@ OptionParser.new do |parser|
     puts parser
     puts "\n# Website\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed"
     puts "\n# Examples\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed/examples"
-    puts "Environment vars:\nLLMED_PROVIDER_API_KEY\nLLMED_PROVIDER_MODEL=#{provider_model}\nLLMED_PROVIDER_URI_BASE=#{provider_uri_base}"
+    puts "\n# Current Environment\nLLMED_PROVIDER_API_KEY\nLLMED_PROVIDER_MODEL=#{provider_model}\nLLMED_PROVIDER_URI_BASE=#{provider_uri_base}"
+    puts <<~DOC
+
+    # A minimal example
+    <!--
+    #% Minimal example
+    #% llm_provider : like_openai | openai | anthropic
+    #!environment llm_provider like_openai
+    #% llm_provider_model : depends provider
+    #!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
+    #% llm_provider_model : depends provider
+    #!environment llm_provider_uri_base https://api.together.xyz/v1
+    #!environment language ruby
+    #!environment output_file fscalls.rb
+    -->
+
+    # Main
+
+    Show to user 'hi world!'.
+    DOC
     exit
   end
 
@@ -47,7 +76,7 @@ OptionParser.new do |parser|
     release_dir = path
   end
 
-  parser.on('-l', '--language LANGUAGE', String, 'Programming Language: ruby, python') do |lang|
+  parser.on('-l', '--language LANGUAGE', String, 'Programming Language: ruby, python (default: ruby)') do |lang|
     language = lang
   end
 
@@ -63,6 +92,34 @@ end
 
 llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
 llmed.set_language language
-llmed.set_llm provider: provider, api_key: provider_api_key, model: provider_model, options: {uri_base: provider_uri_base}
-LLMed::LiterateProgramming.execute(llmed, 'literate_programming', source_code, output_file: output_file)
+LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |contexts, application_args, environment|
+  environment.each do |k, v|
+    case k
+    when 'llm_provider'
+      provider = v
+    when 'llm_provider_model'
+      provider_model = v
+    when 'llm_provider_uri_base'
+      provider_uri_base = v
+    when 'language'
+      language = v
+    end
+  end
+
+  if provider_api_key.strip.empty?
+    logger.error "LLMED_PROVIDER_API_KEY is not set. Please set the environment variable and try again."
+    exit 1
+  end
+
+  logger.info "Compiling for language: #{language}"
+  logger.info "LLM Provider: #{provider} Model: #{provider_model} URI Base: #{provider_uri_base}"
+
+  llmed.set_llm provider: provider, api_key: provider_api_key, model: provider_model, options: {uri_base: provider_uri_base}
+  llmed.application('literate_programming', **application_args) do
+    contexts.each do |lcontext|
+      context(lcontext[:title]) { lcontext[:content] }
+    end
+  end
+end
+
 llmed.compile()

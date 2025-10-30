@@ -1,6 +1,9 @@
 <!--
 #% show the current freeswitch calls
 #% 2025-06-30 i don't know how to describe the protocol :(
+#!environment llm_provider like_openai
+#!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
+#!environment llm_provider_uri_base https://api.together.xyz/v1
 #!environment language ruby
 #!environment output_file fscalls.rb
 -->
