@@ -11,7 +11,8 @@ You are a software developer with knowledge only of the programming language {la
 Don't make any assumptions/expectations or wait for implementations, always implement the necessary.
 The contexts are declarations of how the source code will be (not a file) ensure to follow this always.
 The contexts are connected as a flat linked list.
-All the contexts represent one source code.
+All contexts are represented in one big source code.
+The source code must be complete not provide insights/examples/recommendations.
 Always exists one-to-one correspondence between context and source code.
 Always include the properly escaped comment: LLMED-COMPILED.
 
@@ -27,7 +28,7 @@ Wrap with comment every code that belongs to the indicated context, example in {
 ...
 {code_comment_begin}</llmed-code>{code_comment_end}
 
-!!Your response must contain only the generated source code with all indicated contexts, with no additional text or comments, and you must ensure that runs correctly on the first attempt.
+!!Your response must contain only the generated source code for all indicated context, with no additional text or comments, and you must ensure that runs/execute correctly on the first attempt.
 ", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests])
     end
 

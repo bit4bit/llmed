@@ -120,13 +120,19 @@ class LLMed
       else
         user_contexts_iter = user_contexts.dup
         contexts_iter = contexts.dup
-        rewire_code_contexts(contexts_iter, user_contexts_iter)
-        contexts_sorted = contexts_iter
+        order_digests = rewire_code_contexts(contexts_iter, user_contexts_iter)
+
+        contexts_on_digests = order_digests.map { |digest| contexts_iter.find { |ctx| ctx.digest == digest } }
+        contexts_missing_digests = contexts_iter.select { |ctx| !order_digests.include?(ctx.digest) }
+        contexts_sorted = contexts_on_digests + contexts_missing_digests
       end
 
+      # Sort contexts so that the latest digest (the one whose 'after' is empty) comes last
       @contexts = contexts_sorted.sort do |a, b|
-        if a.digest == b.after
+        if a.after.empty? && !b.after.empty?
           1
+        elsif !a.after.empty? && b.after.empty?
+          -1
         else
           0
         end
@@ -138,13 +144,18 @@ class LLMed
     private
 
     def rewire_code_contexts(code_contexts, user_contexts)
+      order_digests = []
       user_contexts.each_with_next do |user_context, next_user_context|
-        ctx = code_contexts.find { |ctx| ctx.digest == user_context.digest }
+        ctx = code_contexts.find { |ctx| ctx.name == user_context.name }
         if ctx
+          ctx.digest = user_context.digest
+          order_digests << user_context.digest
           ctx.after = '' if user_contexts.count > 1
           ctx.after = next_user_context.digest if next_user_context
         end
       end
+
+      order_digests
     end
 
     def initialize(origin, code_comment)

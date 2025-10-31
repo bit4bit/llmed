@@ -220,4 +220,35 @@ code C
 code B
 #</llmed-code>"
   end
+
+  it 'merge context sync user missed contexts in last' do
+    r1 = described_class.load("#<llmed-code context='A' digest='contextA' after='contextB'>
+code A
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after=''>
+code B
+#</llmed-code>", @ruby_comment)
+    rchange = described_class.load("#<llmed-code context='C' digest='contextC' after=''>
+code C
+#</llmed-code>", @ruby_comment)
+
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'B', digest: 'contextB'),
+        LLMed::Context.new(name: 'C', digest: 'contextC'),
+      ]
+    )
+
+    r1.merge!(rchange, user_contexts)
+    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
+code A
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after='contextC'>
+code B
+#</llmed-code>
+#<llmed-code context='C' digest='contextC' after=''>
+code C
+#</llmed-code>"
+  end
 end

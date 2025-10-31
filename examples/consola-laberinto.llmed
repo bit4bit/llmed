@@ -2,7 +2,7 @@ set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
 # TODO: estoy en un laberinto, como adicionar que solicite las dimensiones del mapa?
 # he intendado varias opciones pero no actualiza el codigo.
-application "laberinto", release: 2, language: 'ruby', output_file: "consola-laberinto.ollmed" do
+application "laberinto", release: 3, language: 'ruby', output_file: "consola-laberinto.ollmed" do
   context "Entidades" do
     <<-LLM
     Entidades:
@@ -31,12 +31,13 @@ application "laberinto", release: 2, language: 'ruby', output_file: "consola-lab
     <<-LLM
     El juego finaliza una vez el usuario llega a la salida o presionar la letra q.
     Almacenar el historico de puntos en la carpeta personal del usuario, con el nombre 'consola-laberinto.history'.
-    
+
     LLM
   end
 
   context "Main" do
     <<-LLM
+    Mostrar bienvenida.
     Interfaz del juego es terminal linux.
     Solicitar al jugador las dimensiones del laberinto.
 
@@ -55,6 +56,13 @@ application "laberinto", release: 2, language: 'ruby', output_file: "consola-lab
     El movimiento del jugador es fluido.
     Mostrar la cantidad de pasos realizados.
     Mostrar mensaje de bienvenida.
+
     LLM
+  end
+
+  context "Application" do
+  <<-LLM
+  Ejecutar script.
+  LLM
   end
 end
