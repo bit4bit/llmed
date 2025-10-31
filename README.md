@@ -71,7 +71,7 @@ then compile using command `llmed.literate`.
 * Cycle
   * Edit application.
   * Once you agree with the current state of the application, increase the value of the `release` attribute
-* Commit the release file (.release) and the source code (.llmed).
+* Commit the release file (.release) and the source code (.llmed) and the snapshot (.snapshot).
 
 # Usage
 
