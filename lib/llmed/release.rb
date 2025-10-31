@@ -5,7 +5,8 @@ class LLMed
   class Release
     ContextCode = Struct.new(:name, :digest, :code, :after) do
       def to_llmed_code(code_comment)
-        "#{code_comment.begin}<llmed-code context='#{name}' digest='#{digest}' after='#{after}'>#{code_comment.end}#{code}#{code_comment.begin}</llmed-code>#{code_comment.end}"
+        close_newline = "\n" if code.strip.empty?
+        "#{code_comment.begin}<llmed-code context='#{name}' digest='#{digest}' after='#{after}'>#{code_comment.end}#{code}#{close_newline}#{code_comment.begin}</llmed-code>#{code_comment.end}"
       end
 
       def digest?
@@ -112,15 +113,29 @@ class LLMed
         @changes << [:added, new_ctx]
       end
 
-      contexts_sorted = []
       # prioritize user order
-      user_contexts.each do |name, _digest|
-        contexts.each do |ctx|
-          if ctx.name == name
-            contexts_sorted << ctx
-            break
-          end
+      contexts_that_belongs_to_user = []
+      contexts_that_not_belongs_to_user = []
+      if user_contexts.empty?
+        contexts_sorted = contexts
+      else
+        user_contexts_iter = user_contexts.dup
+        contexts_iter = contexts.dup
+
+        user_contexts.each do |name, _digest|
+          contexts_iter = contexts_iter.delete_if {|ctx|
+            if ctx.name == name
+              contexts_that_belongs_to_user << ctx
+              true
+            else
+              false
+            end
+          }
         end
+
+        contexts_that_not_belongs_to_user = contexts_iter
+        contexts_sorted = contexts_that_not_belongs_to_user + contexts_that_belongs_to_user
+        contexts_sorted.flatten!
       end
 
       @contexts = contexts_sorted.sort {|a,b|
@@ -130,6 +145,7 @@ class LLMed
           0
         end
       }
+
       self
     end
 

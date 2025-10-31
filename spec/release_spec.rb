@@ -148,7 +148,7 @@ code B
 code AA
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA', 'C' => 'contextC'})
+    r1.merge!(rchange, {'C' => 'contextC', 'A' => 'contextA', 'B' => 'contextB'})
     expect(r1.content).to eq "#<llmed-code context='C' digest='contextC' after=''>
 #</llmed-code>
 #<llmed-code context='A' digest='contextA' after='contextB'>
@@ -158,4 +158,28 @@ code AA
 code B
 #</llmed-code>"
   end
+
+  it 'merge context sync user missed contexts in middle' do
+    r1 = LLMed::Release.load("#<llmed-code context='A' digest='contextA' after='contextB'>
+code A
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after=''>
+code B
+#</llmed-code>", @ruby_comment)
+    rchange = LLMed::Release.load("#<llmed-code context='C' digest='contextC' after=''>
+code C
+#</llmed-code>", @ruby_comment)
+
+    r1.merge!(rchange, {'A' => 'contextA','C' => 'contextC', 'B' => 'contextB'})
+    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
+code A
+#</llmed-code>
+#<llmed-code context='C' digest='contextC' after=''>
+code C
+#</llmed-code>
+#<llmed-code context='B' digest='contextB' after=''>
+code B
+#</llmed-code>"
+  end
+
 end
