@@ -8,7 +8,7 @@ class LLMed
       # Manual tested, pass 5 times execution
       @prompt = LLMed::LLM::Template.build(template: "
         You are a software developer specialized in the programming language {language}. Follow SOLID principles strictly. Use only imperative and functional programming styles and design highly isolated components. You have full access to the standard library and third-party packages only if explicitly allowed.
-        Hard requirements: produce complete, executable, and compilable source code — no placeholders, no pseudo-código, no partial implementations, no explanations. If anything below cannot be satisfied, produce a runtime error implementation that clearly fails fast (see example main below).
+        Hard requirements: produce complete, executable, and compilable source code — no placeholders, no pseudo-código, no partial implementations, no explanations. If anything below cannot be satisfied, produce a runtime error implementation that clearly fails fast.
 
         The input contexts are functional sections of a single large source file (not separate files). Contexts are linked as a flat linked list. There must be a one-to-one correspondence between each context and the code generated for that context. You must only generate source code for the context(s) whose digest is listed in {update_context_digests}.
 
@@ -27,22 +27,30 @@ class LLMed
         Behavioral rules (must be obeyed):
         1. No comments-only outputs. If your natural answer would be comments, instead implement executable code that performs the described behavior. Do not output explanatory text outside code blocks — output only source code for the indicated contexts.
         2. All functions/methods must have bodies implementing the intended behavior. If external information is missing, implement a reasonable, deterministic default rather than leaving a stub.
-        3. Include a runnable test harness at the bottom of the output (for interpreted languages a main() or equivalent; for compiled languages a main entry and minimal buildable code). The harness must demonstrate the generated code running and include assert-style checks that validate core behavior.
-        4. Fail-fast fallback: if the requested context genuinely cannot be implemented, include a clear runtime failure function implementation_impossible() that raises/prints a single machine-readable error (e.g. throws an exception with message IMPLEMENTATION-IMPOSSIBLE) and still compiles.
-        5. One-to-one mapping: produce exactly one code block per digest requested. Do not add unrelated helper contexts unless they are wrapped and linked to an indicated digest; if helpers are necessary, include them inside the same context wrapper.
-        6. Include the literal LLMED-COMPILED comment somewhere inside the code.
-        7. Do not output any text outside the source code. The assistant response must be only source code for the requested context(s).
+        3. Fail-fast fallback: if the requested context genuinely cannot be implemented, include a clear runtime failure function implementation_impossible() that raises/prints a single machine-readable error (e.g. throws an exception with message IMPLEMENTATION-IMPOSSIBLE) and still compiles.
+        4. One-to-one mapping: produce exactly one code block per digest requested. Do not add unrelated helper contexts unless they are wrapped and linked to an indicated digest; if helpers are necessary, include them inside the same context wrapper.
+        5. Include the literal LLMED-COMPILED comment somewhere inside the code.
+        6. Do not output any text outside the source code. The assistant response must be only source code for the requested context(s).
+
+        All behavior described by contexts marked with '-:' in <changes> must be completely removed from the generated source code.
+        Do not leave any code, print statements, functions, or references implementing deleted contexts.
+        Each context listed in '+:' or '=:' must be implemented exactly according to its description.
+        Behavior from removed contexts must not appear anywhere in the output, even indirectly.
+        <changes>
+        {changes_of_contexts}
+        </changes>
 
         Output requirement: your response must contain only the generated source code for the indicated context(s), with the required wrapper comments and the test harness; nothing else.
-", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests])
+", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests changes_of_contexts])
     end
 
-    def prompt(language:, source_code:, code_comment_begin:, code_comment_end:, update_context_digests: [])
+    def prompt(language:, source_code:, code_comment_begin:, code_comment_end:, update_context_digests: [], changes_of_contexts: '')
       @prompt.format(language: language,
                      source_code: source_code,
                      code_comment_begin: code_comment_begin,
                      code_comment_end: code_comment_end,
-                     update_context_digests: update_context_digests.join(','))
+                     update_context_digests: update_context_digests.join(','),
+                     changes_of_contexts: changes_of_contexts)
     end
 
     # Change the default prompt, input variables: language, source_code

@@ -1,0 +1,4 @@
+{"inserted_at":1761929337,"name":"hola mundo ruby","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1052,"duration_seconds":5}
+{"inserted_at":1761929400,"name":"hola mundo ruby","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1401,"duration_seconds":4}
+{"inserted_at":1761929443,"name":"hola mundo ruby","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1306,"duration_seconds":4}
+{"inserted_at":1761929503,"name":"hola mundo ruby","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":1303,"duration_seconds":3}

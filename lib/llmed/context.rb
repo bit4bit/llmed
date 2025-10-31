@@ -67,6 +67,10 @@ class LLMed
       "# Context: \"#{@name}\" Digest: #{digest}\n\n#{@message}"
     end
 
+    def raw
+      @message
+    end
+
     def llm(message)
       @message = message
     end

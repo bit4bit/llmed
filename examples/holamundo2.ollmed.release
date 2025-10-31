@@ -1,0 +1,7 @@
+#<llmed-code context='variables' digest='da200ddc78f9be558af9103254afe5e31b6603120316b00d9fefe5a77ddcb072' after='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993'>
+saludos = 'hola mundo' # LLMED-COMPILED
+#</llmed-code>
+#<llmed-code context='main' digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993' after=''>
+puts saludos # LLMED-COMPILED
+puts Time.now.strftime("%H:%M:%S") # LLMED-COMPILED
+#</llmed-code>

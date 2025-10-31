@@ -21,7 +21,7 @@ application "MINI COUNTER", release: 2, language: :node, output_file: "minicount
   end
 end
 
-application "MINI COUNTER UI", release: 5, language: :html, output_file: "minicounterui.html" do
+application "MINI COUNTER UI", release: 8, language: :html, output_file: "minicounterui.html" do
   context("server api") { from_release("minicounter.ollmed.release") }
   context "UI" do
     <<-LLM
@@ -29,7 +29,8 @@ application "MINI COUNTER UI", release: 5, language: :html, output_file: "minico
     Base of server api is 'http://localhost:3007'.
 
     Show the latest counter using the endpoint '/count'.
-    Has a button that calls '/count'..
+    Has a button to fetch the counter.
+    Has a button that increase the counter.
     LLM
   end
 end

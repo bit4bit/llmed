@@ -66,10 +66,12 @@ class LLMed
   def compile_application(app)
     app.notify('COMPILE START')
 
-    app.prepare
+    app.prepare_release
     app.evaluate
+    app.prepare_snapshot
     if app.rebuild?
       llm = @configuration.llm
+
       messages = [LLMed::LLM::Message::System.new(app.system_prompt(@configuration))]
       app.contexts.each do |ctx|
         next if ctx.skip?

@@ -92,18 +92,18 @@ describe LLMed do
     release_file = "#{output_file}.release"
 
     @llmed.application 'demo', release: nil, output_file: output_file do
-      context('main') { "Show to the user 'hola mundo'" }
+      context('main') { "Show to the user 'hola mundo'\nSame" }
     end
     @llmed.compile
 
     @llmed.application 'demo', release: 1, output_file: output_file do
-      context('main') { "Show to the user 'hola mundo2'" }
+      context('main') { "Show to the user 'hola mundo2'\nSame" }
     end
     @llmed.compile
     expect(File.read(release_file)).to including("puts 'hola mundo'")
 
     @llmed.application 'demo', release: 2, output_file: output_file do
-      context('main') { "Show to the user 'hola mundo2'" }
+      context('main') { "Show to the user 'hola mundo2'\nSame" }
     end
     @llmed.compile
     expect(File.read(release_file)).not_to including("puts 'hola mundo'")

@@ -1,8 +1,7 @@
-#<llmed-code context='variables' digest='a296da0cf9ced1f00fd16af58e8e5f931d9174e6e7eb6b28781be0e2733899a7' link-digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993'>
-saludos = 'hola mundoa'
+#<llmed-code context='variables' digest='0888f4b6020430022203cd4c262b297dea993f3bec2301cd3c5950b2cfe71dbc' after='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993'>
+saludos = 'hola mundoA'
 #</llmed-code>
-
-#<llmed-code context='main' digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993' link-digest=''>
+#<llmed-code context='main' digest='fc45ee42b01da5d70d61f16e1349d51747e1600c7aa6345bc28cf95ff8b7b993' after=''>
 puts saludos
 puts Time.now
 #</llmed-code>

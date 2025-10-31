@@ -1,4 +1,9 @@
-<!--<llmed-code context='UI' digest='8c62901459516c4f96cd59066b4085b9a10bfcbd2a3b59808c222ee50999237d' after=''>-->
+<!--<llmed-code context='server api' digest='d9570fae26a8721b1a13efb735d7ac51ba833d3d5a4cea71b07cb2a411bd0ff4' after='9934ae753d335cb5f77799da5e778e0ea33839e6d50a38b0601764c912a2c45f'>-->
+
+
+
+<!--</llmed-code>-->
+<!--<llmed-code context='UI' digest='9934ae753d335cb5f77799da5e778e0ea33839e6d50a38b0601764c912a2c45f' after=''>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +15,12 @@
 <body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
     <h1 class="text-4xl font-bold mb-4">Counter</h1>
     <div id="counter" class="text-2xl mb-4">Count: 0</div>
-    <button id="fetch-button" class="px-4 py-2 bg-blue-500 text-white rounded">Fetch Count</button>
+    <button id="fetch-button" class="px-4 py-2 bg-blue-500 text-white rounded mb-2">Fetch Count</button>
+    <button id="increment-button" class="px-4 py-2 bg-green-500 text-white rounded">Increase Count</button>
 
     <script>
         const fetchCount = async () => {
-            const response = await fetch('http://localhost:3011/count');
+            const response = await fetch('http://localhost:3007/count');
             if (response.ok) {
                 const data = await response.json();
                 document.getElementById('counter').innerText = `Count: ${data.count}`;
@@ -23,8 +29,22 @@
             }
         };
 
+        const increaseCount = async () => {
+            const response = await fetch('http://localhost:3007/count', {
+                method: 'POST'
+            });
+            if (response.ok) {
+                fetchCount(); // Refresh count after increment
+            } else {
+                console.error('Failed to increase count');
+            }
+        };
+
         document.getElementById('fetch-button').addEventListener('click', fetchCount);
+        document.getElementById('increment-button').addEventListener('click', increaseCount);
+        fetchCount(); // Fetch count on initial load
     </script>
+    <!-- LLMED-COMPILED -->
 </body>
 </html>
 <!--</llmed-code>-->
