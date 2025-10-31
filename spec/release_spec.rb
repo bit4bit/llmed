@@ -3,7 +3,6 @@
 
 require 'llmed'
 
-
 describe LLMed::Release do
   before(:all) do
     @ruby_comment = LLMed::Application::CodeComment.new(:ruby)
@@ -12,19 +11,19 @@ describe LLMed::Release do
   end
 
   it 'merge only update' do
-    r1 = LLMed::Release.load("#<llmed-code context='A' digest='abc' after='contextB'>
+    r1 = described_class.load("#<llmed-code context='A' digest='abc' after='contextB'>
 code A
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>", @ruby_comment)
-    rchange = LLMed::Release.load("#<llmed-code context='A' digest='abc' after='contextB'>
+    rchange = described_class.load("#<llmed-code context='A' digest='abc' after='contextB'>
 code AA
 #</llmed-code>", @ruby_comment)
 
     user_contexts = LLMed::UserContexts.new(
       [
-        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'A', digest: 'contextA')
       ]
     )
     r1.merge!(rchange, user_contexts)
@@ -37,19 +36,19 @@ code B
   end
 
   it 'merge only update HTML' do
-    r1 = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+    r1 = described_class.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
 code A
 <!--</llmed-code>-->
 <!--<llmed-code context='B' digest='contextB' after=''>-->
 code B
 <!--</llmed-code>-->", @html_comment)
-    rchange = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+    rchange = described_class.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
 code AA
 <!--</llmed-code>-->", @html_comment)
 
     user_contexts = LLMed::UserContexts.new(
       [
-        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'A', digest: 'contextA')
       ]
     )
     r1.merge!(rchange, user_contexts)
@@ -62,19 +61,19 @@ code B
   end
 
   it 'merge only update broken HTML' do
-    r1 = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+    r1 = described_class.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
 code A
 <!--</llmed-code>-->
 <!--<llmed-code context='B' digest='contextB' after=''>-->
 code B
 <!--</llmed-code>-->", @html_comment)
-    rchange = LLMed::Release.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
+    rchange = described_class.load("<!--<llmed-code context='A' digest='abc' after='contextB'>-->
 code AA
 <!--</llmed-code-->", @html_comment)
 
     user_contexts = LLMed::UserContexts.new(
       [
-        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'A', digest: 'contextA')
       ]
     )
     r1.merge!(rchange, user_contexts)
@@ -87,20 +86,20 @@ code B
   end
 
   it 'merge only node broken comment' do
-    r1 = LLMed::Release.load("//<llmed-code context='A' digest='abc' after='contextB'>
+    r1 = described_class.load("//<llmed-code context='A' digest='abc' after='contextB'>
 code A
 //</llmed-code>
 //<llmed-code context='B' digest='contextB' after=''>
 code B
 //</llmed-code>", @node_comment)
-    rchange = LLMed::Release.load("//<llmed-code context='A' digest='abc' after='contextB'>
+    rchange = described_class.load("//<llmed-code context='A' digest='abc' after='contextB'>
 code AA
 http://localhost:300;
 //</llmed-code-->", @node_comment)
 
     user_contexts = LLMed::UserContexts.new(
       [
-        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'A', digest: 'contextA')
       ]
     )
     r1.merge!(rchange, user_contexts)
@@ -114,13 +113,13 @@ code B
   end
 
   it 'merge append new context' do
-    r1 = LLMed::Release.load("#<llmed-code context='A' digest='contextA' after='contextB'>
+    r1 = described_class.load("#<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>", @ruby_comment)
-    rchange = LLMed::Release.load("#<llmed-code context='C' digest='contextC' after='contextB'>
+    rchange = described_class.load("#<llmed-code context='C' digest='contextC' after='contextB'>
 code C
 #</llmed-code>", @ruby_comment)
 
@@ -138,19 +137,19 @@ code B
   end
 
   it 'merge context without source code' do
-    r1 = LLMed::Release.load("#<llmed-code context='A' digest='abc'>
+    r1 = described_class.load("#<llmed-code context='A' digest='abc'>
 code A
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>", @ruby_comment)
-    rchange = LLMed::Release.load("#<llmed-code context='A' digest='abc' after='contextB'>
+    rchange = described_class.load("#<llmed-code context='A' digest='abc' after='contextB'>
 code AA
 #</llmed-code>", @ruby_comment)
 
     user_contexts = LLMed::UserContexts.new(
       [
-        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'A', digest: 'contextA')
       ]
     )
     r1.merge!(rchange, user_contexts)
@@ -163,13 +162,13 @@ code B
   end
 
   it 'merge context sync user missed contexts' do
-    r1 = LLMed::Release.load("#<llmed-code context='A' digest='abc'>
+    r1 = described_class.load("#<llmed-code context='A' digest='abc'>
 code A
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>", @ruby_comment)
-    rchange = LLMed::Release.load("#<llmed-code context='A' digest='abc' after='contextB'>
+    rchange = described_class.load("#<llmed-code context='A' digest='abc' after='contextB'>
 code AA
 #</llmed-code>", @ruby_comment)
 
@@ -177,11 +176,11 @@ code AA
       [
         LLMed::Context.new(name: 'C', digest: 'contextC'),
         LLMed::Context.new(name: 'A', digest: 'contextA'),
-        LLMed::Context.new(name: 'B', digest: 'contextB'),
+        LLMed::Context.new(name: 'B', digest: 'contextB')
       ]
     )
     r1.merge!(rchange, user_contexts)
-    expect(r1.content).to eq "#<llmed-code context='C' digest='contextC' after=''>
+    expect(r1.content).to eq "#<llmed-code context='C' digest='contextC' after='contextA'>
 #</llmed-code>
 #<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
@@ -192,13 +191,13 @@ code B
   end
 
   it 'merge context sync user missed contexts in middle' do
-    r1 = LLMed::Release.load("#<llmed-code context='A' digest='contextA' after='contextB'>
+    r1 = described_class.load("#<llmed-code context='A' digest='contextA' after='contextB'>
 code A
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>", @ruby_comment)
-    rchange = LLMed::Release.load("#<llmed-code context='C' digest='contextC' after=''>
+    rchange = described_class.load("#<llmed-code context='C' digest='contextC' after=''>
 code C
 #</llmed-code>", @ruby_comment)
 
@@ -206,20 +205,19 @@ code C
       [
         LLMed::Context.new(name: 'A', digest: 'contextA'),
         LLMed::Context.new(name: 'C', digest: 'contextC'),
-        LLMed::Context.new(name: 'B', digest: 'contextB'),
+        LLMed::Context.new(name: 'B', digest: 'contextB')
       ]
     )
 
     r1.merge!(rchange, user_contexts)
-    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
+    expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextC'>
 code A
 #</llmed-code>
-#<llmed-code context='C' digest='contextC' after=''>
+#<llmed-code context='C' digest='contextC' after='contextB'>
 code C
 #</llmed-code>
 #<llmed-code context='B' digest='contextB' after=''>
 code B
 #</llmed-code>"
   end
-
 end

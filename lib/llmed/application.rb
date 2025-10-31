@@ -187,8 +187,8 @@ class LLMed
           end
 
           # added new context
-          if !release_context.digest? && !user_contexts[ctx.name].nil?
-            update_context_digest << user_contexts[ctx.name].digest
+          if !release_context.digest? && !user_contexts.by_name(ctx.name).nil?
+            update_context_digest << user_contexts.by_name(ctx.name).digest
             next
           elsif release_context.digest? && !ctx.same_digest?(release_context.digest)
             update_rest = true

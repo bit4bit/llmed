@@ -1,5 +1,6 @@
 # Copyright 2025 Jovany Leandro G.C <bit4bit@riseup.net>
 # frozen_string_literal: true
+
 require 'erb'
 
 class LLMed
@@ -16,8 +17,19 @@ class LLMed
       @contexts.empty?
     end
 
-    def [](name)
-      @contexts.find { |ctx| ctx.name == name }
+    def [](idx)
+      @contexts[idx]
+    end
+
+    def each_with_next(&block)
+      @contexts.each_with_index do |ctx, idx|
+        next_ctx = @contexts[idx + 1]
+        block.call(ctx, next_ctx)
+      end
+    end
+
+    def count
+      @contexts.count
     end
 
     def by_name(name)

@@ -107,49 +107,45 @@ class LLMed
       # insertions missed user contexts
       user_contexts.each do |user_context|
         next if contexts.any? { |ctx| ctx.name == user_context.name }
+
         code = release.context_by(user_context.name).code
         new_ctx = ContextCode.new(user_context.name, user_context.digest, code, '')
         contexts.prepend(new_ctx)
         @changes << [:added, new_ctx]
       end
 
-      # prioritize user order
-      contexts_that_belongs_to_user = []
-      contexts_that_not_belongs_to_user = []
+      # code context must have the same order as user contexts
       if user_contexts.empty?
         contexts_sorted = contexts
       else
         user_contexts_iter = user_contexts.dup
         contexts_iter = contexts.dup
-
-        user_contexts.each do |user_context|
-          contexts_iter = contexts_iter.delete_if {|ctx|
-            if ctx.name == user_context.name
-              contexts_that_belongs_to_user << ctx
-              true
-            else
-              false
-            end
-          }
-        end
-
-        contexts_that_not_belongs_to_user = contexts_iter
-        contexts_sorted = contexts_that_not_belongs_to_user + contexts_that_belongs_to_user
-        contexts_sorted.flatten!
+        rewire_code_contexts(contexts_iter, user_contexts_iter)
+        contexts_sorted = contexts_iter
       end
 
-      @contexts = contexts_sorted.sort {|a,b|
+      @contexts = contexts_sorted.sort do |a, b|
         if a.digest == b.after
           1
         else
           0
         end
-      }
+      end
 
       self
     end
 
     private
+
+    def rewire_code_contexts(code_contexts, user_contexts)
+      user_contexts.each_with_next do |user_context, next_user_context|
+        ctx = code_contexts.find { |ctx| ctx.digest == user_context.digest }
+        if ctx
+          ctx.after = '' if user_contexts.count > 1
+          ctx.after = next_user_context.digest if next_user_context
+        end
+      end
+    end
 
     def initialize(origin, code_comment)
       @origin = origin

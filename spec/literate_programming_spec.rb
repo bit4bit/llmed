@@ -5,7 +5,7 @@ require 'llmed'
 
 describe LLMed::LiterateProgramming do
   before do
-    logger = Logger.new(STDOUT)
+    logger = Logger.new($stdout)
     @llmed = LLMed.new(logger: logger, output_dir: '/tmp', release_dir: '/tmp')
   end
 
@@ -14,13 +14,13 @@ describe LLMed::LiterateProgramming do
     @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
 
     code = <<~CODE
-# Main
+      # Main
 
-[hiworld](./spec/hiworld.cllmed)
+      [hiworld](./spec/hiworld.cllmed)
 
-CODE
+    CODE
     fake = StringIO.new
-    LLMed::LiterateProgramming.execute(code, output_file: fake) do |contexts, application_args, environment|
+    described_class.execute(code, output_file: fake) do |contexts, application_args, _environment|
       @llmed.application('test', **application_args) do
         contexts.each do |lcontext|
           context(lcontext[:title]) { lcontext[:content] }
@@ -37,11 +37,11 @@ CODE
     @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
 
     code = <<~CODE
-# Main
-Show to the user 'hola mundo'.
-CODE
+      # Main
+      Show to the user 'hola mundo'.
+    CODE
     fake = StringIO.new
-    LLMed::LiterateProgramming.execute(code, output_file: fake) do |contexts, application_args, environment|
+    described_class.execute(code, output_file: fake) do |contexts, application_args, _environment|
       @llmed.application('test', **application_args) do
         contexts.each do |lcontext|
           context(lcontext[:title]) { lcontext[:content] }

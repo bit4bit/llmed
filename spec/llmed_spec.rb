@@ -8,8 +8,8 @@ require 'json'
 
 describe LLMed do
   before do
-    logger = Logger.new(STDOUT)
-    @llmed = LLMed.new(logger: logger, output_dir: '/tmp', release_dir: '/tmp')
+    logger = Logger.new($stdout)
+    @llmed = described_class.new(logger: logger, output_dir: '/tmp', release_dir: '/tmp')
   end
 
   it 'configuration' do
@@ -45,7 +45,7 @@ describe LLMed do
     @llmed.set_language 'ruby'
     fake = StringIO.new
     @llmed.application 'demo', output_file: fake do
-      context('main', skip: true) { from_file('./spec/hiworld.cllmed') }
+      context('main', skip: true) { from_file('./spec/hiworld.cllmed') } # rubocop:disable all
     end
     @llmed.compile
 
@@ -135,6 +135,7 @@ describe LLMed do
 
     @llmed.application 'demo', release: 1, output_file: tempfile do
       context('show 1') { "Show to the user 'hola mundo1'" }
+
       context('show 2') { "Show to the user 'hola mundo2'" }
     end
     @llmed.compile
@@ -148,6 +149,7 @@ describe LLMed do
     @llmed.set_language 'ruby'
     @llmed.application 'demo', output_file: tempfile do
       context('show 1') { "Show to the user 'hola mundo1'" }
+
       context('show 3') { "Show to the user 'hola mundo3'" }
     end
     @llmed.compile
@@ -156,7 +158,9 @@ describe LLMed do
 
     @llmed.application 'demo', release: 1, output_file: tempfile do
       context('show 1') { "Show to the user 'hola mundo1'" }
+
       context('show 2') { "Show to the user 'hola mundo2'" }
+
       context('show 3') { "Show to the user 'hola mundo3'" }
     end
     @llmed.compile
