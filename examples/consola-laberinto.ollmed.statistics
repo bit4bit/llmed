@@ -30,3 +30,9 @@
 {"inserted_at":1761908726,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1809,"duration_seconds":9}
 {"inserted_at":1761908769,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1869,"duration_seconds":10}
 {"inserted_at":1761909314,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1841,"duration_seconds":7}
+{"inserted_at":1761909537,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1903,"duration_seconds":9}
+{"inserted_at":1761909615,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1872,"duration_seconds":8}
+{"inserted_at":1761909655,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1857,"duration_seconds":8}
+{"inserted_at":1761909919,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":1780,"duration_seconds":6}
+{"inserted_at":1761910096,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":3067,"duration_seconds":14}
+{"inserted_at":1761910157,"name":"laberinto","provider":"openai","model":"gpt-4o-mini","release":3,"total_tokens":2809,"duration_seconds":12}

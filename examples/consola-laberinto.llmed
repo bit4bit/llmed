@@ -59,10 +59,4 @@ application "laberinto", release: 3, language: 'ruby', output_file: "consola-lab
 
     LLM
   end
-
-  context "Application" do
-  <<-LLM
-  Ejecutar script.
-  LLM
-  end
 end

@@ -17,13 +17,8 @@ application "TCP Ping", release: nil, language: :c, output_file: "tuning-tcpping
 
   context "main" do
     <<-LLM
-    TCP Client connect to 'localhost:8500'.
-    LLM
-  end
-
-  context "logging" do
-    <<-LLM
     Show to the user the connection host and port.
+    TCP Client connect to 'localhost:8500'.
     LLM
   end
 end
@@ -43,14 +38,10 @@ application "TCP Pong", release: nil, language: :python, output_file: "tuning-tc
 
   context "main" do
     <<-LLM
+    Show to the user the listening host and port.
+    Show to the user a example using telnet linux command.
     TCP Server listening at 'localhost:8500'.
     LLM
   end
 
-  context "logging" do
-    <<-LLM
-    Show to the user the listening host and port.
-    Show to the user a example using telnet linux command.
-    LLM
-  end
 end
