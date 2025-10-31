@@ -3,12 +3,39 @@
 require 'erb'
 
 class LLMed
+  class UserContexts
+    def initialize(contexts)
+      @contexts = contexts.dup
+    end
+
+    def each(&block)
+      @contexts.each(&block)
+    end
+
+    def empty?
+      @contexts.empty?
+    end
+
+    def [](name)
+      @contexts.find { |ctx| ctx.name == name }
+    end
+
+    def by_name(name)
+      @contexts.find { |ctx| ctx.name == name }
+    end
+
+    def by_digest(digest)
+      @contexts.find { |ctx| ctx.same_digest?(digest) }
+    end
+  end
+
   class Context
     attr_reader :name
 
-    def initialize(name:, options: {})
+    def initialize(name:, digest: nil, options: {})
       @name = name
       @skip = options[:skip] || false
+      @fixed_digest = digest || nil
       @release_dir = options[:release_dir]
     end
 
@@ -21,7 +48,7 @@ class LLMed
     end
 
     def digest
-      Digest::SHA256.hexdigest "#{@name}.#{@message}"
+      @fixed_digest || Digest::SHA256.hexdigest("#{@name}.#{@message}")
     end
 
     def message

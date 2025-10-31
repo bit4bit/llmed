@@ -100,15 +100,15 @@ class LLMed
 
       # fix user contexts digest
       contexts.each do |ctx|
-        user_context_digest = user_contexts[ctx.name]
-        ctx.digest = user_context_digest unless user_context_digest.nil?
+        user_context = user_contexts.by_name(ctx.name)
+        ctx.digest = user_context.digest unless user_context.nil?
       end
 
       # insertions missed user contexts
-      user_contexts.each do |name, digest|
-        next if contexts.any? { |ctx| ctx.name == name }
-        code = release.context_by(name).code
-        new_ctx = ContextCode.new(name, digest, code, '')
+      user_contexts.each do |user_context|
+        next if contexts.any? { |ctx| ctx.name == user_context.name }
+        code = release.context_by(user_context.name).code
+        new_ctx = ContextCode.new(user_context.name, user_context.digest, code, '')
         contexts.prepend(new_ctx)
         @changes << [:added, new_ctx]
       end
@@ -122,9 +122,9 @@ class LLMed
         user_contexts_iter = user_contexts.dup
         contexts_iter = contexts.dup
 
-        user_contexts.each do |name, _digest|
+        user_contexts.each do |user_context|
           contexts_iter = contexts_iter.delete_if {|ctx|
-            if ctx.name == name
+            if ctx.name == user_context.name
               contexts_that_belongs_to_user << ctx
               true
             else
@@ -158,7 +158,7 @@ class LLMed
       @code_comment = code_comment
       @contexts = []
 
-      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'\s*(after='.*?')?>#{@code_comment.end}(.+?)#{@code_comment.begin}+\s*<?/?llmed-code}im).each do |match|
+      @origin.scan(%r{<llmed-code context='(.+?)' digest='(.+?)'(?:\s+[^>]*?)?(after='.*?')?>#{@code_comment.end}(.+?)#{@code_comment.begin}+\s*<?/?llmed-code}im).each do |match|
         name, digest, after_block, code = match
         after = if after_block.nil?
                   ''

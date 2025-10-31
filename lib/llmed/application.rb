@@ -134,9 +134,8 @@ class LLMed
       !digests_of_context_to_update.tap do |digests|
         digests.each do |digest|
           context_by_digest = release_contexts.invert
-
           if context_by_digest[digest].nil?
-            @logger.info("APPLICATION #{@name} ADDING CONTEXT #{user_contexts.invert[digest]}")
+            @logger.info("APPLICATION #{@name} ADDING CONTEXT #{user_contexts.by_digest(digest).name}")
           else
             @logger.info("APPLICATION #{@name} REBUILDING CONTEXT #{context_by_digest[digest]}")
           end
@@ -189,7 +188,7 @@ class LLMed
 
           # added new context
           if !release_context.digest? && !user_contexts[ctx.name].nil?
-            update_context_digest << user_contexts[ctx.name]
+            update_context_digest << user_contexts[ctx.name].digest
             next
           elsif release_context.digest? && !ctx.same_digest?(release_context.digest)
             update_rest = true
@@ -214,9 +213,7 @@ class LLMed
     end
 
     def user_contexts
-      @contexts.map do |ctx|
-        [ctx.name, ctx.digest]
-      end.to_h
+      UserContexts.new(@contexts)
     end
 
     def release_contexts

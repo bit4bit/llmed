@@ -22,7 +22,12 @@ code B
 code AA
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
 #</llmed-code>
@@ -42,7 +47,12 @@ code B
 code AA
 <!--</llmed-code>-->", @html_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "<!--<llmed-code context='A' digest='contextA' after='contextB'>-->
 code AA
 <!--</llmed-code>-->
@@ -62,7 +72,12 @@ code B
 code AA
 <!--</llmed-code-->", @html_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "<!--<llmed-code context='A' digest='contextA' after='contextB'>-->
 code AA
 <!--</llmed-code>-->
@@ -83,7 +98,12 @@ code AA
 http://localhost:300;
 //</llmed-code-->", @node_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "//<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
 http://localhost:300;
@@ -104,7 +124,7 @@ code B
 code C
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {})
+    r1.merge!(rchange, LLMed::UserContexts.new([]))
 
     expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextC'>
 code AA
@@ -128,7 +148,12 @@ code B
 code AA
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
 code AA
 #</llmed-code>
@@ -148,7 +173,14 @@ code B
 code AA
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {'C' => 'contextC', 'A' => 'contextA', 'B' => 'contextB'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'C', digest: 'contextC'),
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'B', digest: 'contextB'),
+      ]
+    )
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "#<llmed-code context='C' digest='contextC' after=''>
 #</llmed-code>
 #<llmed-code context='A' digest='contextA' after='contextB'>
@@ -170,7 +202,15 @@ code B
 code C
 #</llmed-code>", @ruby_comment)
 
-    r1.merge!(rchange, {'A' => 'contextA','C' => 'contextC', 'B' => 'contextB'})
+    user_contexts = LLMed::UserContexts.new(
+      [
+        LLMed::Context.new(name: 'A', digest: 'contextA'),
+        LLMed::Context.new(name: 'C', digest: 'contextC'),
+        LLMed::Context.new(name: 'B', digest: 'contextB'),
+      ]
+    )
+
+    r1.merge!(rchange, user_contexts)
     expect(r1.content).to eq "#<llmed-code context='A' digest='contextA' after='contextB'>
 code A
 #</llmed-code>
