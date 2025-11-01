@@ -66,12 +66,43 @@ add CORS endpoints.
 ```
 then compile using command `llmed.literate`.
 
+## HOWTO Programing using LLMED
+
+Programming with LLMED involves breaking down the problem into smaller contexts, where each context must be connected to the next, creating a chain of contexts that expresses the final solution (program/application/software). The final code will map each context to a block of code (module, function, or statements—this is determined by the LLM), so any changes to a context will be reflected in the source code. This is important to keep in mind. For example, it is not the same to write:
+
+```
+# Dependencies
+...
+# Application
+...
+```
+
+as
+
+```
+# Application
+...
+# Dependencies
+...
+```
+
+!!The LLM can do crazy things when trying to create working source code for that.
+
+At the top of the document, write the most stable concepts (the contexts that don't change frequently), going down to the most unstable (the contexts that are expected to change more frequently) concepts. The purpose of these two things:
+
+1. The map between context and code block.
+2. Rebuilding of contexts: LLMed assumes that there is a unique chain, so it will recompile from the changed context to the end of the chain.
+
+So, programming with LLMed means being aware of the technology (programming language, libraries, software architecture, tools, etc.). LLMed's job is to provide a free-form natural language programming compiler.
+
+
 ## Programming flow
 
-* Cycle
+1. Cycle
   * Edit application.
   * Once you agree with the current state of the application, increase the value of the `release` attribute
-* Commit the release file (.release) and the source code (.llmed) and the snapshot (.snapshot).
+2. Commit the release file (.release) and the source code (.llmed) and the snapshot (.snapshot).
+3. Go to 1.
 
 # Usage
 
