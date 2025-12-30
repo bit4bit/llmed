@@ -27,10 +27,17 @@ class LLMed
         Behavioral rules (must be obeyed):
         1. No comments-only outputs. If your natural answer would be comments, instead implement executable code that performs the described behavior. Do not output explanatory text outside code blocks — output only source code for the indicated contexts.
         2. All functions/methods must have bodies implementing the intended behavior. If external information is missing, implement a reasonable, deterministic default rather than leaving a stub.
-        3. Fail-fast fallback: if the requested context genuinely cannot be implemented, include a clear runtime failure function implementation_impossible() that raises/prints a single machine-readable error (e.g. throws an exception with message IMPLEMENTATION-IMPOSSIBLE) and still compiles.
+        3. Fail-fast fallback: if the requested context genuinely cannot be implemented, include a clear runtime failure function implementation_impossible() that raises/prints a single machine-readable error (e.g. throws an exception with message IMPLEMENTATION-IMPOSSIBLE) also a technical description with the reasons and still compiles.
         4. One-to-one mapping: produce exactly one code block per digest requested. Do not add unrelated helper contexts unless they are wrapped and linked to an indicated digest; if helpers are necessary, include them inside the same context wrapper.
         5. Include the literal LLMED-COMPILED comment somewhere inside the code.
         6. Do not output any text outside the source code. The assistant response must be only source code for the requested context(s).
+        7. Absolute goal precedence: Before generating code, always merge the goals with the context. If any context conflicts with a goal, the goal must override the context's intended purpose, not its implementation details.
+        8. All user-facing strings, messages, and output must comply with the goals. This overrides literal instructions in context descriptions if there is a conflict.
+        9. Step-by-step plan to follow:
+          a. Read goals and extract all global rules (e.g., language, style, behavior).
+          b. Read the context descriptions.
+          c. Merge context with the goal; if there is any conflict, modify the context output to satisfy the goal.
+          d. Generate code fully complying with both the merged specification and the required context wrapper format.
 
         All behavior described by contexts marked with '-:' in <changes> must be completely removed from the generated source code.
         Do not leave any code, print statements, functions, or references implementing deleted contexts.
@@ -40,17 +47,27 @@ class LLMed
         {changes_of_contexts}
         </changes>
 
+
+        <goals>
+        {goals}
+        <goals>
+
+        Goals and context are orthogonal: goals orient the context.
+
+        Plan: Before writing any code, ensure you fully integrate both the overarching specifications (goal sections) and the context-level descriptions during code generation.
+
         Output requirement: your response must contain only the generated source code for the indicated context(s), with the required wrapper comments and the test harness; nothing else.
-", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests changes_of_contexts])
+", input_variables: %w[language source_code code_comment_begin code_comment_end update_context_digests changes_of_contexts goals])
     end
 
-    def prompt(language:, source_code:, code_comment_begin:, code_comment_end:, update_context_digests: [], changes_of_contexts: '')
+    def prompt(language:, source_code:, code_comment_begin:, code_comment_end:, update_context_digests: [], changes_of_contexts: '', goals: '')
       @prompt.format(language: language,
                      source_code: source_code,
                      code_comment_begin: code_comment_begin,
                      code_comment_end: code_comment_end,
                      update_context_digests: update_context_digests.join(','),
-                     changes_of_contexts: changes_of_contexts)
+                     changes_of_contexts: changes_of_contexts,
+                     goals: goals)
     end
 
     # Change the default prompt, input variables: language, source_code

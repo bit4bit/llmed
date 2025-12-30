@@ -1,34 +1,41 @@
-
-//<llmed-code context='API' digest='77cf954c4443f521a3c00a4c480b2346389cbdaedf441bf9f3f69f6a727472a4'>
+//<llmed-code context='dependencies' digest='f14a3aa867f29b884583c10eff61d2be46224c0e4cfd3fdac9a385112df5feca' after='18d0b23d666b00863469d576d410e4bfb8a7796b8e7bdad0742d8892d2130e4d'>
+// No external dependencies used, only standard library is required.
+//</llmed-code>
+//<llmed-code context='API' digest='18d0b23d666b00863469d576d410e4bfb8a7796b8e7bdad0742d8892d2130e4d' after=''>
 const http = require('http');
+const url = require('url');
 
 let count = 0;
 
-const setCORSHeaders = (res) => {
+const requestListener = (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-};
 
-const requestHandler = (req, res) => {
-    setCORSHeaders(res);
-    
-    if (req.method === 'GET' && req.url === '/count') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ count }));
-    } else if (req.method === 'POST' && req.url === '/count') {
-        count += 1;
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ count }));
+    const parsedUrl = url.parse(req.url, true);
+
+    if (parsedUrl.pathname === '/count') {
+        if (req.method === 'GET') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ count }));
+        } else if (req.method === 'POST') {
+            count += 2;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ count }));
+        } else {
+            res.writeHead(405);
+            res.end();
+        }
     } else {
         res.writeHead(404);
         res.end();
     }
 };
 
-const server = http.createServer(requestHandler);
+const server = http.createServer(requestListener);
 
 server.listen(3001, () => {
     console.log('API Server listening on port 3001');
 });
+// LLMED-COMPILED
 //</llmed-code>

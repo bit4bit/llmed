@@ -17,6 +17,8 @@ In classic terms the LLM is the Compiler, Source Code is the Binary, the Program
 set_llm provider: :like_openai, api_key: ENV['TOGETHERAI_API_KEY'], model: 'Qwen/Qwen2.5-Coder-32B-Instruct', options: {uri_base: 'https://api.together.xyz/v1'}
 
 application "MINI COUNTER", release: nil, language: :node, output_file: "minicounter.ollmed" do
+  achieve('coding guidelines') { 'Add top comment with a technical summary of the implementation' }
+  
   # Most stable context: if this changes, all subsequent context will be recompiled.
   context "dependencies" do
     <<-LLM

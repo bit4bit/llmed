@@ -3,10 +3,12 @@ set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 # set_llm provider: :anthropic, api_key: ENV['ANTHROPIC_API_KEY'], model: 'claude-3-5-sonnet-20240620'
 
 application "hola mundo ruby", release: 1, language: :ruby, output_file: "holamundo.ollmed" do
+  achieve('localization') { 'use language English, translate if necessary.' }
+
   # More stable context: if this changes, all subsequent context will be recompiled.
   context "variables" do
     <<-LLM
-    Variable saludos de valor 'hola mundoA'.
+    Variable saludos de valor 'hola mundo'.
     LLM
   end
 

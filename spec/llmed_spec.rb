@@ -85,6 +85,19 @@ describe LLMed do
     expect(fake.string).to including("puts 'hola mundo'")
   end
 
+  it 'compile application with descriptions' do
+    @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
+    @llmed.set_language 'ruby'
+    fake = StringIO.new
+    @llmed.application 'demo', output_file: fake do
+      achieve('localization') { 'use language English translate if necessary.' }
+      context('main') { 'Show to the user "hola mundo"' }
+    end
+    @llmed.compile
+
+    expect(fake.string).to including('puts "hello world"')
+  end
+
   it 'compile application to release' do
     @llmed.set_llm(provider: :openai, api_key: ENV.fetch('OPENAI_API_KEY', nil), model: 'gpt-4o-mini')
     @llmed.set_language 'ruby'

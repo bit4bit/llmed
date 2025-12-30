@@ -39,6 +39,7 @@ class LLMed
       @code_comment = CodeComment.new(language)
       @block = block
       @contexts = []
+      @goals = []
       @logger = logger
       @release = release
       @release_dir = release_dir
@@ -55,6 +56,15 @@ class LLMed
       ctx.llm(output) unless ctx.message?
 
       @contexts << ctx
+    end
+
+    def achieve(name, **opts, &block)
+      opts[:release_dir] = @release_dir
+      goal = Goal.new(name: name, options: opts)
+      output = goal.instance_eval(&block)
+      goal.llm(output) unless goal.message?
+
+      @goals << goal
     end
 
     def evaluate
@@ -205,6 +215,7 @@ class LLMed
     end
 
     def patch_or_create(output)
+
       output_content = output
 
       if @release && File.exist?(release_source_code) && !release_contexts.empty?
@@ -233,6 +244,7 @@ class LLMed
         @logger.info("APPLICATION #{@name} SNAPSHOT REFRESHED")
       end
 
+      return unless @output_file.is_a?(String)
       output_file = Pathname.new(@output_dir) + @output_file
       FileUtils.cp(output_file, release_source_code)
       FileUtils.cp(output_file, release_main_source_code)
@@ -254,7 +266,8 @@ class LLMed
                            code_comment_begin: @code_comment.begin,
                            code_comment_end: @code_comment.end,
                            update_context_digests: digests_of_context_to_update,
-                           changes_of_contexts: changes_of_contexts)
+                           changes_of_contexts: changes_of_contexts,
+                           goals: goals)
     end
 
     def rebuild?
@@ -298,6 +311,10 @@ class LLMed
     end
 
     private
+
+    def goals
+      @goals.map(&:message).join("\n")
+    end
 
     def digests_of_context_to_update
       update_context_digest = []

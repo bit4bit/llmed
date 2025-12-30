@@ -1,2 +1,11 @@
 {"inserted_at":1749313283,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":null,"total_tokens":535,"duration_seconds":5}
 {"inserted_at":1749313447,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":1,"total_tokens":857,"duration_seconds":5}
+{"inserted_at":1767117753,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":1345,"duration_seconds":6}
+{"inserted_at":1767117885,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":1722,"duration_seconds":5}
+{"inserted_at":1767117923,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":1886,"duration_seconds":9}
+{"inserted_at":1767117972,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":2133,"duration_seconds":10}
+{"inserted_at":1767118002,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":2121,"duration_seconds":7}
+{"inserted_at":1767118045,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":2085,"duration_seconds":12}
+{"inserted_at":1767118107,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":2078,"duration_seconds":8}
+{"inserted_at":1767118353,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":1987,"duration_seconds":10}
+{"inserted_at":1767118403,"name":"MINI COUNTER","provider":"openai","model":"gpt-4o-mini","release":2,"total_tokens":2053,"duration_seconds":8}

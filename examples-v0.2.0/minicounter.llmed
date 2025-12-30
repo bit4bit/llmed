@@ -1,9 +1,11 @@
 set_llm provider: :openai, api_key: ENV['OPENAI_API_KEY'], model: 'gpt-4o-mini'
 
 application "MINI COUNTER", release: 2, language: :node, output_file: "minicounter.ollmed" do
+  achieve('coding guidelines') { 'Always document the implementation plan.' }
+
   context "dependencies" do
     <<-LLM
-    * Must use only the standard/native library.
+    * Must use only the standard/native library..
     * Must not use external dependencies.
     LLM
   end
@@ -15,7 +17,7 @@ application "MINI COUNTER", release: 2, language: :node, output_file: "minicount
     - GET /count
       - return the latest count.
     - POST /count
-      - increase the count by 1.
+      - increase the count by 2.
     add CORS endpoints.
     LLM
   end

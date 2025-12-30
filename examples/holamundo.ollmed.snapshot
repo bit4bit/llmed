@@ -1,1 +1,1 @@
-{"contexts":{"variables":{"name":"variables","message":"    Variable saludos de valor 'hola mundoA'.\n"},"main":{"name":"main","message":"    Mostrar al usuario la variable saludos.\n    Mostrar al usuario la hora en curso.\n"}}}
+{"contexts":{"variables":{"name":"variables","message":"    Variable saludos de valor 'hola mundo'.\n"},"main":{"name":"main","message":"    Mostrar al usuario la variable saludos.\n    Mostrar al usuario la hora en curso.\n"}}}
