@@ -173,8 +173,6 @@ class LLMed
     end
 
     def prepare_snapshot
-      raise "snapshot preparation require contexts" if @contexts.empty?
-
       @logger.info("APPLICATION #{@name} PREPARING SNAPSHOT #{@snapshot.snapshot_file}")
 
       @snapshot.sync(@contexts)
