@@ -93,8 +93,11 @@ class LLMed
         diffs = {}
         other_contexts.each do |other_ctx|
           current_ctx = @contexts[other_ctx.name]
-          result = line_diff(current_ctx['message'], other_ctx.raw)
-          # omit not changes
+          result = if current_ctx.nil?
+                     other_ctx.raw.split("\n").map { |line| ["+:", line] }
+                   else
+                     line_diff(current_ctx['message'], other_ctx.raw)
+                   end
           if !result.all?{|op, line| op == '=:'}
             diffs[other_ctx.name] = result
           end
