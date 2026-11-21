@@ -52,9 +52,9 @@ set_llm provider: :opencode, api_key: nil, model: 'opencode-go/glm-5.3-flash'
 Since version 0.4.0, literate programming was introduced, and it is now possible to write code using a markdown-like syntax.
 
 ```md
-#!language ruby
+#!environment language ruby
 #% increase release once you agree with the change
-#!environment release
+#!environment release 1
 #!environment output_file minicounter.rb
 
 # Dependencies
@@ -126,7 +126,7 @@ So, programming with LLMed means being aware of the technology (programming lang
 # Usage Development
 
 * `bundle3.1 install --path vendor/`
-* `OPENAI_API_KEY=xxx rake llmed[examples/tictactoe.rb]`
+* `OPENAI_API_KEY=xxx rake llmed[examples-v0.2.0/tictactoe.llmed]`
 
 # Interesting
 

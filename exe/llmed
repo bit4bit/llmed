@@ -24,8 +24,8 @@ OptionParser.new do |parser|
   parser.banner = "Usage: llmed [options] <application file .llmed or stdin>"
   parser.on_tail("-h", "--help", "Show this message") do
     puts parser
-    puts "\n# Website\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed"
-    puts "\n# Examples\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed/examples"
+    puts "\n# Website\nhttps://github.com/bit4bit/llmed"
+    puts "\n# Examples\nhttps://github.com/bit4bit/llmed/tree/main/examples"
     exit
   end
 
