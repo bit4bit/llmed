@@ -20,8 +20,15 @@ class LLMed
     Response = Struct.new(:provider, :model, :source_code, :duration_seconds, :total_tokens, keyword_init: true)
 
     module SourceCodeScrubbing
+      BARE_LANGUAGE_LINE = %w[
+        ruby rb python3 python2 python py javascript js jsx typescript ts node nodejs
+        bash sh shell zsh html elixir exs golang go cpp c++ c java kotlin rust sql lua perl
+      ].join('|').freeze
+
       def source_code(content)
-        content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|bash|html|go|c(pp)?)([ \n])/, '')
+        content = content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|bash|html|go|c(pp)?)([ \t]*\n)/, '')
+        content.gsub(/^[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\n/i, '')
+               .sub(/(?:\A|(?<=\n))[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\z/i, '')
       end
     end
 
