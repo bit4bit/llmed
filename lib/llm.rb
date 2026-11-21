@@ -1,7 +1,6 @@
 require 'openai'
 require 'langchain'
 require 'open3'
-require 'timeout'
 
 Langchain.logger.level = Logger::ERROR
 
@@ -148,28 +147,74 @@ class LLMed
       private
 
       def run(command, prompt)
-        Timeout.timeout(@timeout) do
-          Open3.capture3(*command, stdin_data: prompt)
+        stdin, stdout, stderr, wait_thr = Open3.popen3(*command, spawn_options)
+
+        stdin_thread = prompt_writer(stdin, prompt)
+        stdout_thread = stream_reader(stdout)
+        stderr_thread = stream_reader(stderr)
+
+        unless wait_thr.join(@timeout)
+          kill_child_tree(wait_thr)
+          stdin_thread.join
+          stdout_thread.join
+          stderr_thread.join
+
+          @logger.error("opencode run timed out after #{@timeout} seconds")
+          raise "opencode run timed out after #{@timeout} seconds"
         end
-      rescue Timeout::Error
-        kill_running_children
-        @logger.error("opencode run timed out after #{@timeout} seconds")
-        raise "opencode run timed out after #{@timeout} seconds"
+
+        stdin_thread.join
+        [stdout_thread.value, stderr_thread.value, wait_thr.value]
       end
 
-      def kill_running_children
-        my_pid = Process.pid
-        Dir.children('/proc').each do |entry|
-          next unless entry.match?(/\A\d+\z/)
-          next if entry.to_i == my_pid
+      def spawn_options
+        windows? ? { new_pgroup: true } : { pgroup: true }
+      end
 
-          process_status = File.read("/proc/#{entry}/status") rescue next
-          next unless process_status.match?(/^PPid:\s*#{my_pid}$/)
-          Process.kill('KILL', entry.to_i) rescue nil
-          Process.wait(entry.to_i) rescue nil
+      def windows?
+        RUBY_PLATFORM.match?(/mswin|mingw/)
+      end
+
+      def prompt_writer(stdin, prompt)
+        Thread.new do
+          begin
+            stdin.write(prompt)
+          rescue StandardError
+            nil
+          end
+          begin
+            stdin.close
+          rescue StandardError
+            nil
+          end
         end
-      rescue StandardError
-        nil
+      end
+
+      def stream_reader(stream)
+        Thread.new do
+          begin
+            stream.read
+          rescue StandardError
+            ''
+          end
+        end
+      end
+
+      def kill_child_tree(wait_thr)
+        target = windows? ? wait_thr.pid : -wait_thr.pid
+
+        send_signal('TERM', target)
+        wait_thr.join(5)
+        send_signal('KILL', target) if wait_thr.alive?
+        wait_thr.join(5)
+
+        @logger.warn("opencode timeout kill left pid #{wait_thr.pid} alive") if wait_thr.alive?
+      end
+
+      def send_signal(signal, target)
+        Process.kill(signal, target)
+      rescue Errno::ESRCH, Errno::EPERM => e
+        @logger.warn("opencode timeout kill #{signal} to #{target} failed: #{e.message}")
       end
     end
 
