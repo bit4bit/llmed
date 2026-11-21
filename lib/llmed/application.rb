@@ -166,6 +166,7 @@ class LLMed
       end
 
       def dump
+        FileUtils.mkdir_p(File.dirname(@snapshot_file))
         File.open(@snapshot_file, 'w') do |file|
           file.write(JSON.dump({'contexts' => @contexts}))
         end
