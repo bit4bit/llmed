@@ -168,8 +168,17 @@ class LLMed
       def chat(messages: [])
         prompt = messages.map { |m| m[:content] }.join(PROMPT_SEPARATOR)
 
-        command = [@bin, 'run', '-m', @model]
-        command.concat(['--dir', @dir]) if @dir
+        if @dir
+          chat_response(prompt, @dir)
+        else
+          Dir.mktmpdir('llmed-opencode') { |dir| chat_response(prompt, dir) }
+        end
+      end
+
+      private
+
+      def chat_response(prompt, dir)
+        command = [@bin, 'run', '-m', @model, '--dir', dir]
         command.concat(@flags) if @flags
 
         start = Time.now

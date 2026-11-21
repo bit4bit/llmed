@@ -103,3 +103,75 @@ describe LLMed::LLM::OpenCode, '#chat end-to-end' do
     expect(response.source_code).to include('run -m m')
   end
 end
+
+describe LLMed::LLM::OpenCode, '#chat sandbox dir' do
+  def build_provider(llm_options: {})
+    described_class.new(
+      logger: Logger.new(StringIO.new),
+      api_key: nil,
+      default_options: { chat_model: 'm' },
+      llm_options: llm_options
+    )
+  end
+
+  def stub_opencode_run
+    commands = []
+    dir_snapshots = []
+    allow(Open3).to receive(:popen3) do |*args|
+      if (i = args.index('--dir'))
+        dir = args[i + 1]
+        dir_snapshots << (File.directory?(dir) ? Dir.children(dir).sort : nil)
+      else
+        dir_snapshots << nil
+      end
+      commands << args.dup
+      [double(write: nil, close: nil),
+       double(read: "```ruby\nputs 'hi'\n```"),
+       double(read: ''),
+       double(join: true, value: double(success?: true, exitstatus: 0))]
+    end
+    [commands, dir_snapshots]
+  end
+
+  def dir_of(command)
+    i = command.index('--dir')
+    i && command[i + 1]
+  end
+
+  it 'runs inside a fresh empty temp dir when no :dir is provided' do
+    commands, dir_snapshots = stub_opencode_run
+    build_provider.chat(messages: [{ role: 'user', content: 'p' }])
+
+    dir = dir_of(commands.first)
+    expect(commands.first).to include('--dir')
+    expect(dir).to start_with(Dir.tmpdir)
+    expect(dir_snapshots.first).to eq([])
+  end
+
+  it 'uses a different fresh dir for every chat call' do
+    commands, = stub_opencode_run
+    provider = build_provider
+    provider.chat(messages: [{ role: 'user', content: 'p' }])
+    provider.chat(messages: [{ role: 'user', content: 'p' }])
+
+    expect(dir_of(commands[0])).to start_with(Dir.tmpdir)
+    expect(dir_of(commands[1])).to start_with(Dir.tmpdir)
+    expect(dir_of(commands[0])).not_to eq(dir_of(commands[1]))
+  end
+
+  it 'keeps an explicit :dir sandbox and creates no temp dir' do
+    expect(Dir).not_to receive(:mktmpdir)
+    commands, = stub_opencode_run
+    build_provider(llm_options: { dir: '/my/sandbox' })
+      .chat(messages: [{ role: 'user', content: 'p' }])
+
+    expect(commands.first).to include('--dir', '/my/sandbox')
+  end
+
+  it 'removes the fresh temp dir after chat returns' do
+    commands, = stub_opencode_run
+    build_provider.chat(messages: [{ role: 'user', content: 'p' }])
+
+    expect(File.exist?(dir_of(commands.first))).to be(false)
+  end
+end
