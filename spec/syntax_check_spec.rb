@@ -58,6 +58,24 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
     expect(described_class.validate!('python3', "x = 1\n", logger)).to be(true)
   end
 
+  it 'accepts valid rust source' do
+    expect(described_class.validate!('rust', "fn main() {}\n", logger)).to be(true)
+  end
+
+  it 'rejects invalid rust source' do
+    expect {
+      described_class.validate!('rust', "fn main() {\n", logger)
+    }.to raise_error(/syntax check failed for rust/)
+  end
+
+  describe 'CodeComment rust support' do
+    it 'uses // line comments for rust' do
+      comment = LLMed::Application::CodeComment.new('rust')
+      expect(comment.begin).to eq('//')
+      expect(comment.end).to eq('')
+    end
+  end
+
   it 'skips unknown languages returning true' do
     expect(described_class.validate!('cobol', "DISPLAY 'HI'.\n", logger)).to be(true)
     expect(messages).to include('syntax checker unavailable for cobol')

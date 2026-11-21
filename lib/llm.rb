@@ -2,6 +2,7 @@ require 'openai'
 require 'langchain'
 require 'open3'
 require 'tempfile'
+require 'tmpdir'
 
 Langchain.logger.level = Logger::ERROR
 
@@ -24,11 +25,12 @@ class LLMed
       PYTHON_CHECK_CODE = "import sys; compile(open(sys.argv[1]).read(), 'check', 'exec')".freeze
 
       CHECKERS = {
-        'ruby' => ->(path) { ['ruby', '-c', path] },
-        'node' => ->(path) { ['node', '--check', path] },
-        'javascript' => ->(path) { ['node', '--check', path] },
-        'python' => ->(path) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
-        'python3' => ->(path) { ['python3', '-c', PYTHON_CHECK_CODE, path] }
+        'ruby' => ->(path, _tmpdir) { ['ruby', '-c', path] },
+        'node' => ->(path, _tmpdir) { ['node', '--check', path] },
+        'javascript' => ->(path, _tmpdir) { ['node', '--check', path] },
+        'python' => ->(path, _tmpdir) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
+        'python3' => ->(path, _tmpdir) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
+        'rust' => ->(path, tmpdir) { ['rustc', '--emit=metadata', '--out-dir', tmpdir, path] }
       }.freeze
 
       module_function
@@ -40,14 +42,16 @@ class LLMed
           return true
         end
 
-        Tempfile.create(['llmed-syntax-check']) do |tmpfile|
-          tmpfile.write(source.to_s)
-          tmpfile.flush
-          stdout, stderr, status = Open3.capture3(*checker.call(tmpfile.path))
-          unless status.success?
-            output = [stderr, stdout].compact.join.strip
-            logger.error("syntax check failed for #{language}: #{output.lines.last(5).join}")
-            raise "syntax check failed for #{language}: #{output.lines.first.to_s.strip}"
+        Dir.mktmpdir('llmed-syntax-check') do |tmpdir|
+          Tempfile.create(['llmed-syntax-check']) do |tmpfile|
+            tmpfile.write(source.to_s)
+            tmpfile.flush
+            stdout, stderr, status = Open3.capture3(*checker.call(tmpfile.path, tmpdir))
+            unless status.success?
+              output = [stderr, stdout].compact.join.strip
+              logger.error("syntax check failed for #{language}: #{output.lines.last(5).join}")
+              raise "syntax check failed for #{language}: #{output.lines.first.to_s.strip}"
+            end
           end
         end
         true
@@ -64,7 +68,7 @@ class LLMed
       ].join('|').freeze
 
       def source_code(content)
-        content = content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|bash|html|go|c(pp)?)([ \t]*\n)/, '')
+        content = content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|bash|html|go|c(pp)?|rust)([ \t]*\n)/, '')
         content.gsub(/^[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\n/i, '')
                .sub(/(?:\A|(?<=\n))[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\z/i, '')
       end
