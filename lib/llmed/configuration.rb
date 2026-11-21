@@ -122,6 +122,13 @@ class LLMed
           default_options: { temperature: 0.7, chat_model: @provider_model },
           llm_options: @provider_options
         )
+      when :opencode
+        LLMed::LLM::OpenCode.new(
+          logger: @logger,
+          api_key: @provider_api_key,
+          default_options: { chat_model: @provider_model },
+          llm_options: @provider_options
+        )
       when :test
         LLMed::LLM::Test.new
       when nil
