@@ -85,8 +85,9 @@ OptionParser.new do |parser|
   end
 end.parse!
 
+source_file = ARGV.first
 source_code = ARGF.read
-release_dir = File.dirname(ARGV.first) unless ARGV.empty?
+release_dir = File.dirname(source_file) unless source_file.nil?
 
 llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
 llmed.set_language language
@@ -102,7 +103,7 @@ LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |co
     end
   end
 
-  if provider_api_key.strip.empty? && provider != :opencode
+  if provider_api_key.strip.empty? && !%i[opencode test].include?(provider)
     logger.error "LLMED_PROVIDER_API_KEY is not set. Please set the environment variable and try again."
     exit 1
   end
