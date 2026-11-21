@@ -16,7 +16,7 @@ output_file = 'a.out.ollmed'
 
 template = <<~TMP
 #% Minimal example
-#% llm_provider : like_openai | openai | anthropic
+#% llm_provider : like_openai | openai | anthropic | opencode
 #!environment llm_provider like_openai
 #% llm_provider_model : depends provider
 #!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
@@ -34,15 +34,15 @@ OptionParser.new do |parser|
   parser.banner = "Usage: llmed.literate [options] <application file .llmed.literate or stdin>"
   parser.on_tail("-h", "--help", "Show this message") do
     puts parser
-    puts "\n# Website\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed"
-    puts "\n# Examples\nhttps://github.com/bit4bit/llm-labs/tree/main/llmed/examples"
+    puts "\n# Website\nhttps://github.com/bit4bit/llmed"
+    puts "\n# Examples\nhttps://github.com/bit4bit/llmed/tree/main/examples"
     puts "\n# Current Environment\nLLMED_PROVIDER_API_KEY\nLLMED_PROVIDER_MODEL=#{provider_model}\nLLMED_PROVIDER_URI_BASE=#{provider_uri_base}"
     puts <<~DOC
 
     # A minimal example
     <!--
     #% Minimal example
-    #% llm_provider : like_openai | openai | anthropic
+    #% llm_provider : like_openai | openai | anthropic | opencode
     #!environment llm_provider like_openai
     #% llm_provider_model : depends provider
     #!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
@@ -85,28 +85,25 @@ OptionParser.new do |parser|
   end
 end.parse!
 
+source_file = ARGV.first
 source_code = ARGF.read
-if ARGF.respond_to?(:path)
-  release_dir = File.dirname(ARGF.path)
-end
+release_dir = File.dirname(source_file) unless source_file.nil?
 
 llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
 llmed.set_language language
 LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |contexts, application_args, environment|
   environment.each do |k, v|
     case k
-    when 'llm_provider'
-      provider = v
-    when 'llm_provider_model'
+    when :llm_provider
+      provider = v.to_sym
+    when :llm_provider_model
       provider_model = v
-    when 'llm_provider_uri_base'
+    when :llm_provider_uri_base
       provider_uri_base = v
-    when 'language'
-      language = v
     end
   end
 
-  if provider_api_key.strip.empty?
+  if provider_api_key.strip.empty? && !%i[opencode test].include?(provider)
     logger.error "LLMED_PROVIDER_API_KEY is not set. Please set the environment variable and try again."
     exit 1
   end

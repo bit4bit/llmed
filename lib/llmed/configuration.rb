@@ -50,7 +50,7 @@ class LLMed
 
         <goals>
         {goals}
-        <goals>
+        </goals>
 
         Goals and context are orthogonal: goals orient the context.
 
@@ -74,9 +74,9 @@ class LLMed
     # Example:
     #  set_prompt "my new prompt"
     def set_prompt(*arg, input_variables: %w[language code_comment_begin code_comment_end source_code], **args)
-      input_variables = {} if args[:file]
       prompt = File.read(args[:file]) if args[:file]
       prompt ||= arg.first
+      input_variables = prompt.scan(/\{([a-z][a-z0-9_]*)\}/).flatten.uniq if args[:file]
       @prompt = LLMed::LLM::Template.build(template: prompt, input_variables: input_variables)
     end
 
@@ -120,6 +120,13 @@ class LLMed
           logger: @logger,
           api_key: @provider_api_key,
           default_options: { temperature: 0.7, chat_model: @provider_model },
+          llm_options: @provider_options
+        )
+      when :opencode
+        LLMed::LLM::OpenCode.new(
+          logger: @logger,
+          api_key: @provider_api_key,
+          default_options: { chat_model: @provider_model },
           llm_options: @provider_options
         )
       when :test

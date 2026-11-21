@@ -25,7 +25,7 @@ describe LLMed do
     @llmed.application('demo', output_file: output) {}
     @llmed.compile
 
-    expect(output.string).to including('LLMED external prompt')
+    expect(output.string).to include('LLMED external prompt')
   end
 
   it 'compile application context from template' do
@@ -37,7 +37,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(fake.string).to including('hola mundo')
+    expect(fake.string).to include('hola mundo')
   end
 
   it 'compile application skip context' do
@@ -49,7 +49,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(fake.string).not_to including('hola mundo')
+    expect(fake.string).not_to include('hola mundo')
   end
 
   it 'compile application to file with statistics' do
@@ -62,7 +62,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(File.read(output_file)).to including("puts 'hola mundo'")
+    expect(File.read(output_file)).to include("puts 'hola mundo'")
     stats = JSON.load(File.open(output_stats))
 
     expect(stats).to include(
@@ -82,7 +82,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(fake.string).to including("puts 'hola mundo'")
+    expect(fake.string).to include("puts 'hola mundo'")
   end
 
   it 'compile application with descriptions' do
@@ -95,7 +95,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(fake.string).to including('puts "hello world"')
+    expect(fake.string).to include('puts "hello world"')
   end
 
   it 'compile application to release' do
@@ -113,14 +113,14 @@ describe LLMed do
       context('main') { "Show to the user 'hola mundo2'\nSame" }
     end
     @llmed.compile
-    expect(File.read(release_file)).to including("puts 'hola mundo'")
+    expect(File.read(release_file)).to include("puts 'hola mundo'")
 
     @llmed.application 'demo', release: 2, output_file: output_file do
       context('main') { "Show to the user 'hola mundo2'\nSame" }
     end
     @llmed.compile
-    expect(File.read(release_file)).not_to including("puts 'hola mundo'")
-    expect(File.read(release_file)).to including("puts 'hola mundo2'")
+    expect(File.read(release_file)).not_to include("puts 'hola mundo'")
+    expect(File.read(release_file)).to include("puts 'hola mundo2'")
   end
 
   it 'compile application happy context' do
@@ -133,7 +133,7 @@ describe LLMed do
 
     @llmed.compile
 
-    expect(File.read(tempfile)).to including("puts 'hola mundo'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo'")
   end
 
   it 'compile application adding next context' do
@@ -144,7 +144,7 @@ describe LLMed do
       context('show 1') { "Show to the user 'hola mundo1'" }
     end
     @llmed.compile
-    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo1'")
 
     @llmed.application 'demo', release: 1, output_file: tempfile do
       context('show 1') { "Show to the user 'hola mundo1'" }
@@ -152,8 +152,8 @@ describe LLMed do
       context('show 2') { "Show to the user 'hola mundo2'" }
     end
     @llmed.compile
-    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
-    expect(File.read(tempfile)).to including("puts 'hola mundo2'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo1'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo2'")
   end
 
   it 'compile application adding middle context' do
@@ -166,8 +166,8 @@ describe LLMed do
       context('show 3') { "Show to the user 'hola mundo3'" }
     end
     @llmed.compile
-    expect(File.read(tempfile)).to including("puts 'hola mundo1'")
-    expect(File.read(tempfile)).to including("puts 'hola mundo3'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo1'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo3'")
 
     @llmed.application 'demo', release: 1, output_file: tempfile do
       context('show 1') { "Show to the user 'hola mundo1'" }
@@ -179,10 +179,8 @@ describe LLMed do
     @llmed.compile
 
     # expect order
-    File.read(tempfile).scan(/context='(.+?)'/m) => [show1, show2, show3]
-    expect(show1).to eq ['show 1']
-    expect(show2).to eq ['show 2']
-    expect(show3).to eq ['show 3']
+    contexts = File.read(tempfile).scan(/context='(.+?)'/m).map(&:first)
+    expect(contexts).to eq(['show 1', 'show 2', 'show 3'])
   end
 
   it 'compile application with implicit language' do
@@ -198,7 +196,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(File.read(tempfile)).to including("puts 'hola mundo'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo'")
   end
 
   it 'compile application with explicit language' do
@@ -213,7 +211,7 @@ describe LLMed do
     end
     @llmed.compile
 
-    expect(File.read(tempfile)).to including("puts 'hola mundo'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo'")
   end
 
   it 'compile application from string' do
@@ -231,7 +229,7 @@ describe LLMed do
 
     @llmed.compile
 
-    expect(File.read(tempfile)).to including("puts 'hola mundo'")
+    expect(File.read(tempfile)).to include("puts 'hola mundo'")
   end
 
   context 'multiple applications' do
@@ -257,8 +255,8 @@ describe LLMed do
 
       @llmed.compile
 
-      expect(File.read(tempfile_ruby)).to including("puts 'hola mundo'")
-      expect(File.read(tempfile_python)).to including("print('hola mundo')")
+      expect(File.read(tempfile_ruby)).to include("puts 'hola mundo'")
+      expect(File.read(tempfile_python)).to include("print('hola mundo')")
     end
   end
 end
