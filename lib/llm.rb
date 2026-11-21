@@ -1,6 +1,7 @@
 require 'openai'
 require 'langchain'
 require 'open3'
+require 'tempfile'
 
 Langchain.logger.level = Logger::ERROR
 
@@ -18,6 +19,43 @@ class LLMed
     end
 
     Response = Struct.new(:provider, :model, :source_code, :duration_seconds, :total_tokens, keyword_init: true)
+
+    module SyntaxCheck
+      PYTHON_CHECK_CODE = "import sys; compile(open(sys.argv[1]).read(), 'check', 'exec')".freeze
+
+      CHECKERS = {
+        'ruby' => ->(path) { ['ruby', '-c', path] },
+        'node' => ->(path) { ['node', '--check', path] },
+        'javascript' => ->(path) { ['node', '--check', path] },
+        'python' => ->(path) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
+        'python3' => ->(path) { ['python3', '-c', PYTHON_CHECK_CODE, path] }
+      }.freeze
+
+      module_function
+
+      def validate!(language, source, logger)
+        checker = CHECKERS[language.to_s.downcase]
+        unless checker
+          logger.warn("syntax checker unavailable for #{language}")
+          return true
+        end
+
+        Tempfile.create(['llmed-syntax-check']) do |tmpfile|
+          tmpfile.write(source.to_s)
+          tmpfile.flush
+          stdout, stderr, status = Open3.capture3(*checker.call(tmpfile.path))
+          unless status.success?
+            output = [stderr, stdout].compact.join.strip
+            logger.error("syntax check failed for #{language}: #{output.lines.last(5).join}")
+            raise "syntax check failed for #{language}: #{output.lines.first.to_s.strip}"
+          end
+        end
+        true
+      rescue Errno::ENOENT, Errno::EACCES => e
+        logger.warn("syntax checker unavailable for #{language}: #{e.message}")
+        true
+      end
+    end
 
     module SourceCodeScrubbing
       BARE_LANGUAGE_LINE = %w[

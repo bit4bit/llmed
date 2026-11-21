@@ -81,6 +81,7 @@ class LLMed
 
       llm_response = llm.chat(messages: messages)
       @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
+      LLMed::LLM::SyntaxCheck.validate!(app.language.to_s, llm_response.source_code, @logger) unless llm_response.provider == :test
       app.patch_or_create(llm_response.source_code)
       app.write_statistics(llm_response)
       app.notify("COMPILE DONE #{llm_response.duration_seconds}")
