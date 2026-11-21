@@ -48,9 +48,7 @@ OptionParser.new do |parser|
 end.parse!
 
 source_code = ARGF.read
-if ARGF.respond_to?(:path)
-  release_dir = File.dirname(ARGF.path)
-end
+release_dir = File.dirname(ARGV.first) unless ARGV.empty?
 
 llmed = LLMed.new(logger: logger, output_dir: output_dir, release_dir: release_dir)
 llmed.eval_source source_code
