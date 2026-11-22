@@ -3,6 +3,8 @@
 
 class LLMed
   class Configuration
+    DEFAULT_LLM_RETRIES = 2
+
     def initialize(logger:)
       @logger = logger
       # Manual tested, pass 5 times execution
@@ -92,6 +94,25 @@ class LLMed
       @provider_api_key = api_key
       @provider_model = model
       @provider_options = options
+    end
+
+    # Stored set_llm options, e.g. { uri_base: ..., retries: N }
+    def provider_options
+      @provider_options || {}
+    end
+
+    # Literate directive `#!environment llm_provider_retries N`
+    def set_llm_provider_retries(retries)
+      @llm_provider_retries = Integer(retries)
+    end
+
+    # Number of provider re-samples allowed; the doc directive wins over
+    # set_llm options when both are present.
+    def llm_retries
+      return @llm_provider_retries unless @llm_provider_retries.nil?
+      return Integer(provider_options[:retries]) if provider_options.key?(:retries)
+
+      DEFAULT_LLM_RETRIES
     end
 
     def language(main)

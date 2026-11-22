@@ -7,6 +7,10 @@ require 'tmpdir'
 Langchain.logger.level = Logger::ERROR
 
 class LLMed
+  # Transient, re-sample-fixable failure of a provider response
+  # (empty output, invalid syntax, clean transport failure).
+  class RetryableError < StandardError; end
+
   module LLM
     module Message
       System = Struct.new(:content)
@@ -23,7 +27,6 @@ class LLMed
 
     module SyntaxCheck
       PYTHON_CHECK_CODE = "import sys; compile(open(sys.argv[1]).read(), 'check', 'exec')".freeze
-
       CHECKERS = {
         'ruby' => ->(path, _tmpdir) { ['ruby', '-c', path] },
         'node' => ->(path, _tmpdir) { ['node', '--check', path] },
@@ -50,7 +53,7 @@ class LLMed
             unless status.success?
               output = [stderr, stdout].compact.join.strip
               logger.error("syntax check failed for #{language}: #{output.lines.last(5).join}")
-              raise "syntax check failed for #{language}: #{output.lines.first.to_s.strip}"
+              raise RetryableError, "syntax check failed for #{language}: #{output.lines.first.to_s.strip}"
             end
           end
         end
@@ -78,6 +81,12 @@ class LLMed
 
       DEFAULT_URI_BASE = "https://api.openai.com/".freeze
       MAX_TOKENS = 8192
+      # Clean transport failures (connection refused/reset, timeouts, 5xx)
+      # are transient and re-samplable; HTTP 4xx (auth, bad request) are not.
+      RETRYABLE_TRANSPORT_ERRORS = [
+        Faraday::ConnectionFailed,
+        Faraday::ServerError
+      ].freeze
 
       include SourceCodeScrubbing
       private :source_code
@@ -98,20 +107,31 @@ class LLMed
         end
 
         start = Time.now
-        llm_response = @llm.chat(messages: messages, max_tokens: MAX_TOKENS)
+        begin
+          llm_response = @llm.chat(messages: messages, max_tokens: MAX_TOKENS)
+        rescue *RETRYABLE_TRANSPORT_ERRORS => e
+          @logger.error("provider transport failure: #{e.message}")
+          raise RetryableError, "transport failure calling #{provider}: #{e.message}"
+        end
         warn_token_limits(llm_response)
+
+        content = llm_response.chat_completion
+        if content.nil? || content.to_s.strip.empty?
+          @logger.error("provider returned empty response content")
+          raise RetryableError, "empty response from #{provider}"
+        end
 
         stop = Time.now
         Response.new({ provider: provider,
                        model: @llm.chat_parameters[:model],
                        duration_seconds: stop.to_i - start.to_i,
-                       source_code: source_code(llm_response.chat_completion),
+                       source_code: source_code(content),
                        total_tokens: llm_response.total_tokens })
       end
 
       private
       def warn_token_limits(llm_response)
-        if llm_response.completion_tokens >= MAX_TOKENS
+        if llm_response.completion_tokens.to_i >= MAX_TOKENS
           @logger.warn("POSSIBLE INCONSISTENCY COMPLETED TOKENS REACHED MAX TOKENS #{MAX_TOKENS}")
         end
       end
@@ -190,9 +210,13 @@ class LLMed
         stop = Time.now
 
         cleaned = status.success? ? source_code(stdout) : ''
-        if !status.success? || cleaned.strip.empty?
-          @logger.error("opencode run failed (exit: #{status.success? ? 'success but empty output' : status.exitstatus}): #{stderr.to_s.lines.last(10).join}")
+        if !status.success?
+          @logger.error("opencode run failed (exit: #{status.exitstatus}): #{stderr.to_s.lines.last(10).join}")
           raise "opencode run failed for model #{@model}"
+        end
+        if cleaned.strip.empty?
+          @logger.error("opencode run failed (exit: success but empty output): #{stderr.to_s.lines.last(10).join}")
+          raise RetryableError, "opencode run failed for model #{@model}"
         end
 
         Response.new({ provider: :opencode,

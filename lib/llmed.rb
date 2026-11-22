@@ -32,6 +32,8 @@ class LLMed
   def_delegator :@configuration, :set_llm, :set_llm
   # changes default prompt
   def_delegator :@configuration, :set_prompt, :set_prompt
+  # literate directive `#!environment llm_provider_retries N`
+  def_delegator :@configuration, :set_llm_provider_retries, :set_llm_provider_retries
 
   def application(name, output_file:, language: nil, release: nil, output_dir: nil, release_dir: nil, &block)
     @app = Application.new(
@@ -70,23 +72,37 @@ class LLMed
     app.evaluate
     app.prepare_snapshot
     if app.rebuild?
-      llm = @configuration.llm
-
-      messages = [LLMed::LLM::Message::System.new(app.system_prompt(@configuration))]
-      app.contexts.each do |ctx|
-        next if ctx.skip?
-
-        messages << LLMed::LLM::Message::User.new(ctx.message)
-      end
-
-      llm_response = llm.chat(messages: messages)
-      @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
-      LLMed::LLM::SyntaxCheck.validate!(app.language.to_s, llm_response.source_code, @logger) unless llm_response.provider == :test
-      app.patch_or_create(llm_response.source_code)
-      app.write_statistics(llm_response)
-      app.notify("COMPILE DONE #{llm_response.duration_seconds}")
+      compile_with_retries(app)
     else
       @logger.info("APPLICATION #{app.name} NOT CHANGES DETECTED")
+    end
+  end
+
+  def compile_with_retries(app)
+    llm = @configuration.llm
+
+    messages = [LLMed::LLM::Message::System.new(app.system_prompt(@configuration))]
+    app.contexts.each do |ctx|
+      next if ctx.skip?
+
+      messages << LLMed::LLM::Message::User.new(ctx.message)
+    end
+
+    attempts = @configuration.llm_retries + 1
+    (1..attempts).each do |attempt|
+      begin
+        llm_response = llm.chat(messages: messages)
+        @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
+        LLMed::LLM::SyntaxCheck.validate!(app.language.to_s, llm_response.source_code, @logger) unless llm_response.provider == :test
+        app.patch_or_create(llm_response.source_code)
+        app.write_statistics(llm_response)
+        app.notify("COMPILE DONE #{llm_response.duration_seconds}")
+        return
+      rescue RetryableError => e
+        raise if attempt == attempts
+
+        @logger.warn("APPLICATION #{app.name} RETRY #{attempt}/#{attempts} after: #{e.message}")
+      end
     end
   end
 end

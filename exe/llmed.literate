@@ -12,6 +12,7 @@ provider = :like_openai
 provider_api_key = ENV.fetch('LLMED_PROVIDER_API_KEY', '')
 provider_model = ENV.fetch('LLMED_PROVIDER_MODEL', 'Qwen/Qwen2.5-Coder-32B-Instruct')
 provider_uri_base = ENV.fetch('LLMED_PROVIDER_URI_BASE', 'https://api.together.xyz/v1')
+provider_retries = nil
 output_file = 'a.out.ollmed'
 
 template = <<~TMP
@@ -100,6 +101,8 @@ LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |co
       provider_model = v
     when :llm_provider_uri_base
       provider_uri_base = v
+    when :llm_provider_retries
+      provider_retries = v
     end
   end
 
@@ -112,6 +115,7 @@ LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |co
   logger.info "LLM Provider: #{provider} Model: #{provider_model} URI Base: #{provider_uri_base}"
 
   llmed.set_llm provider: provider, api_key: provider_api_key, model: provider_model, options: {uri_base: provider_uri_base}
+  llmed.set_llm_provider_retries(provider_retries) if provider_retries
   llmed.application('literate_programming', **application_args) do
     contexts.each do |lcontext|
       context(lcontext[:title]) { lcontext[:content] }
