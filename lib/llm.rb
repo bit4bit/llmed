@@ -33,7 +33,8 @@ class LLMed
         'javascript' => ->(path, _tmpdir) { ['node', '--check', path] },
         'python' => ->(path, _tmpdir) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
         'python3' => ->(path, _tmpdir) { ['python3', '-c', PYTHON_CHECK_CODE, path] },
-        'rust' => ->(path, tmpdir) { ['rustc', '--emit=metadata', '--out-dir', tmpdir, path] }
+        'rust' => ->(path, tmpdir) { ['rustc', '--emit=metadata', '--out-dir', tmpdir, path] },
+        'c' => ->(path, _tmpdir) { ['gcc', '-fsyntax-only', path] }
       }.freeze
 
       module_function
@@ -46,7 +47,9 @@ class LLMed
         end
 
         Dir.mktmpdir('llmed-syntax-check') do |tmpdir|
-          Tempfile.create(['llmed-syntax-check']) do |tmpfile|
+          # gcc -fsyntax-only only recognizes *.c inputs; other checkers are extension-agnostic.
+          suffix = language.to_s.downcase == 'c' ? '.c' : ''
+          Tempfile.create(['llmed-syntax-check', suffix]) do |tmpfile|
             tmpfile.write(source.to_s)
             tmpfile.flush
             stdout, stderr, status = Open3.capture3(*checker.call(tmpfile.path, tmpdir))

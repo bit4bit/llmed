@@ -68,6 +68,16 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
     }.to raise_error(/syntax check failed for rust/)
   end
 
+  it 'accepts valid c source' do
+    expect(described_class.validate!('c', "int main(void) { return 0; }\n", logger)).to be(true)
+  end
+
+  it 'rejects invalid c source' do
+    expect {
+      described_class.validate!('c', "int main( {\n", logger)
+    }.to raise_error(/syntax check failed for c/)
+  end
+
   describe 'CodeComment rust support' do
     it 'uses // line comments for rust' do
       comment = LLMed::Application::CodeComment.new('rust')
