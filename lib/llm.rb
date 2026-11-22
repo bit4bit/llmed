@@ -40,6 +40,8 @@ class LLMed
       module_function
 
       def validate!(language, source, logger)
+        return validate_java!(source, logger) if language.to_s.downcase == 'java'
+
         checker = CHECKERS[language.to_s.downcase]
         unless checker
           logger.warn("syntax checker unavailable for #{language}")
@@ -65,6 +67,29 @@ class LLMed
         logger.warn("syntax checker unavailable for #{language}: #{e.message}")
         true
       end
+
+      # A top-level PUBLIC java class must live in a file named exactly
+      # <ClassName>.java, so a generic temp name makes javac fail for
+      # reasons unrelated to the source.
+      def validate_java!(source, logger)
+        class_name = source.to_s[/public\s+class\s+(\w+)/, 1] || 'LlmedSyntaxCheck'
+        Dir.mktmpdir('llmed-syntax-check') do |tmpdir|
+          tmpfile = File.join(tmpdir, "#{class_name}.java")
+          File.write(tmpfile, source.to_s)
+          classes_dir = File.join(tmpdir, 'classes')
+          FileUtils.mkdir_p(classes_dir)
+          stdout, stderr, status = Open3.capture3('javac', '-d', classes_dir, tmpfile)
+          unless status.success?
+            output = [stderr, stdout].compact.join.strip
+            logger.error("syntax check failed for java: #{output.lines.last(5).join}")
+            raise RetryableError, "syntax check failed for java: #{output.lines.first.to_s.strip}"
+          end
+        end
+        true
+      rescue Errno::ENOENT, Errno::EACCES => e
+        logger.warn("syntax checker unavailable for java: #{e.message}")
+        true
+      end
     end
 
     module SourceCodeScrubbing
@@ -74,7 +99,7 @@ class LLMed
       ].join('|').freeze
 
       def source_code(content)
-        content = content.gsub('```', '').sub(/^(node(js)?|javascript|ruby|python(\d*)|elixir|bash|html|go|c(pp)?|rust)([ \t]*\n)/, '')
+        content = content.gsub('```', '').sub(/^(node(js)?|javascript|java|ruby|python(\d*)|elixir|bash|html|go|c(pp)?|rust)([ \t]*\n)/, '')
         content.gsub(/^[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\n/i, '')
                .sub(/(?:\A|(?<=\n))[ \t]*(?:#{BARE_LANGUAGE_LINE})[ \t]*\z/i, '')
       end

@@ -78,6 +78,31 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
     }.to raise_error(/syntax check failed for c/)
   end
 
+  describe 'CodeComment java support' do
+    it 'uses // line comments for java' do
+      comment = LLMed::Application::CodeComment.new('java')
+      expect(comment.begin).to eq('//')
+      expect(comment.end).to eq('')
+    end
+  end
+
+  it 'accepts valid java source with a public class name' do
+    source = <<~JAVA
+      public class MiniRogue {
+        public static void main(String[] args) {
+          System.out.println("ok");
+        }
+      }
+    JAVA
+    expect(described_class.validate!('java', source, logger)).to be(true)
+  end
+
+  it 'rejects invalid java source' do
+    expect {
+      described_class.validate!('java', "public class MiniRogue {\n", logger)
+    }.to raise_error(/syntax check failed for java/)
+  end
+
   describe 'CodeComment rust support' do
     it 'uses // line comments for rust' do
       comment = LLMed::Application::CodeComment.new('rust')

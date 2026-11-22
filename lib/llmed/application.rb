@@ -26,7 +26,7 @@ class LLMed
 
       def code_comment(language)
         { ruby: ['#', ''], node: ['//', ''], elixir: ['#', ''], bash: ['#', ''], python: ['#', ''], go: ['//', ''], javascript: ['//', ''], c: ['//', ''],
-          cpp: ['//', ''], rust: ['//', ''], html: ['<!--', '-->'] }.fetch(language)
+          cpp: ['//', ''], rust: ['//', ''], java: ['//', ''], html: ['<!--', '-->'] }.fetch(language)
       end
     end
 
