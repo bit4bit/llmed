@@ -103,6 +103,56 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
     }.to raise_error(/syntax check failed for java/)
   end
 
+  describe 'java sibling sources' do
+    def stuck_core_source
+      <<~JAVA
+        package app.stuck;
+
+        public class StuckCore {
+          public StuckData data;
+        }
+      JAVA
+    end
+
+    def stuck_data_source
+      <<~JAVA
+        package app.stuck;
+
+        public class StuckData {
+          public int value;
+        }
+      JAVA
+    end
+
+    it 'accepts a java source referencing a sibling class present in source_dir' do
+      Dir.mktmpdir('llmed-java-siblings') do |dir|
+        File.write(File.join(dir, 'StuckData.java'), stuck_data_source)
+
+        expect(described_class.validate!('java', stuck_core_source, logger, source_dir: dir)).to be(true)
+      end
+    end
+
+    it 'rejects the same source with source_dir nil' do
+      expect {
+        described_class.validate!('java', stuck_core_source, logger)
+      }.to raise_error(LLMed::RetryableError, /cannot find symbol/)
+    end
+
+    it 'accepts a sibling present alongside an unrelated pre-existing java file' do
+      Dir.mktmpdir('llmed-java-siblings') do |dir|
+        File.write(File.join(dir, 'StuckData.java'), stuck_data_source)
+        File.write(File.join(dir, 'Unrelated.java'), <<~JAVA)
+          package unrelated;
+
+          public class Unrelated {
+          }
+        JAVA
+
+        expect(described_class.validate!('java', stuck_core_source, logger, source_dir: dir)).to be(true)
+      end
+    end
+  end
+
   describe 'CodeComment rust support' do
     it 'uses // line comments for rust' do
       comment = LLMed::Application::CodeComment.new('rust')

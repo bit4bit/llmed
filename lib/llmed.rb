@@ -78,22 +78,26 @@ class LLMed
     end
   end
 
-  def compile_with_retries(app)
-    llm = @configuration.llm
+    # Fixed across retry attempts: the artifact directory is a property of
+    # the application, never recomputed from mutated per-attempt state.
+    def compile_with_retries(app)
+      llm = @configuration.llm
 
-    messages = [LLMed::LLM::Message::System.new(app.system_prompt(@configuration))]
-    app.contexts.each do |ctx|
-      next if ctx.skip?
+      messages = [LLMed::LLM::Message::System.new(app.system_prompt(@configuration))]
+      app.contexts.each do |ctx|
+        next if ctx.skip?
 
-      messages << LLMed::LLM::Message::User.new(ctx.message)
-    end
+        messages << LLMed::LLM::Message::User.new(ctx.message)
+      end
 
-    attempts = @configuration.llm_retries + 1
-    (1..attempts).each do |attempt|
-      begin
-        llm_response = llm.chat(messages: messages)
-        @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
-        LLMed::LLM::SyntaxCheck.validate!(app.language.to_s, llm_response.source_code, @logger) unless llm_response.provider == :test
+      source_dir = app.output_dir
+
+      attempts = @configuration.llm_retries + 1
+      (1..attempts).each do |attempt|
+        begin
+          llm_response = llm.chat(messages: messages)
+          @logger.info("APPLICATION #{app.name} TOTAL TOKENS #{llm_response.total_tokens}")
+          LLMed::LLM::SyntaxCheck.validate!(app.language.to_s, llm_response.source_code, @logger, source_dir: source_dir) unless llm_response.provider == :test
         app.patch_or_create(llm_response.source_code)
         app.write_statistics(llm_response)
         app.notify("COMPILE DONE #{llm_response.duration_seconds}")

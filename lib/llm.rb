@@ -39,9 +39,9 @@ class LLMed
 
       module_function
 
-      def validate!(language, source, logger)
+      def validate!(language, source, logger, source_dir: nil)
         lang = language.to_s.downcase
-        return validate_java!(source, logger) if lang == 'java'
+        return validate_java!(source, logger, source_dir: source_dir) if lang == 'java'
         return validate_html!(source, logger) if lang == 'html'
 
         checker = CHECKERS[language.to_s.downcase]
@@ -73,14 +73,23 @@ class LLMed
       # A top-level PUBLIC java class must live in a file named exactly
       # <ClassName>.java, so a generic temp name makes javac fail for
       # reasons unrelated to the source.
-      def validate_java!(source, logger)
+      #
+      # Sibling artifacts of one project can reference each other
+      # (e.g. app.stuck.StuckCore uses app.stuck.StuckData), so every other
+      # *.java of source_dir is copied flat into the tmpdir and passed to
+      # javac in the same input set — javac resolves public classes found
+      # anywhere in the explicit input files. A file sharing the candidate's
+      # class name is excluded so a stale artifact can never shadow the
+      # fresh source.
+      def validate_java!(source, logger, source_dir: nil)
         class_name = source.to_s[/public\s+class\s+(\w+)/, 1] || 'LlmedSyntaxCheck'
         Dir.mktmpdir('llmed-syntax-check') do |tmpdir|
           tmpfile = File.join(tmpdir, "#{class_name}.java")
           File.write(tmpfile, source.to_s)
+          copy_java_siblings!(tmpdir, source_dir, "#{class_name}.java")
           classes_dir = File.join(tmpdir, 'classes')
           FileUtils.mkdir_p(classes_dir)
-          stdout, stderr, status = Open3.capture3('javac', '-d', classes_dir, tmpfile)
+          stdout, stderr, status = Open3.capture3('javac', '-d', classes_dir, *Dir.glob(File.join(tmpdir, '*.java')).sort)
           unless status.success?
             output = [stderr, stdout].compact.join.strip
             logger.error("syntax check failed for java: #{output.lines.last(5).join}")
@@ -90,6 +99,23 @@ class LLMed
         true
       rescue Errno::ENOENT, Errno::EACCES => e
         logger.warn("syntax checker unavailable for java: #{e.message}")
+        true
+      end
+
+      # Flat-copy every other *.java of source_dir into tmpdir. Files sharing
+      # the candidate's temp-file basename (its class name) are skipped so a
+      # stale artifact of the same name can never shadow the candidate.
+      # nil, missing dirs or empty dirs copy nothing: standalone behavior.
+      def copy_java_siblings!(tmpdir, source_dir, candidate_basename)
+        return true if source_dir.nil?
+        return true unless File.directory?(source_dir)
+
+        Dir.glob(File.join(source_dir, '*.java')).sort.each do |path|
+          basename = File.basename(path)
+          next if basename == candidate_basename
+
+          FileUtils.cp(path, File.join(tmpdir, basename))
+        end
         true
       end
 

@@ -7,6 +7,16 @@ class LLMed
   class Application
     attr_reader :contexts, :name, :language
 
+    # Directory containing the generated artifact — where sibling artifacts
+    # of the same project land. nil when the output file is an IO stream.
+    # Named `output_dir` because the `output_file` method name is taken; it
+    # resolves the artifact path the same way output_file/patch_or_create do.
+    def output_dir
+      return nil unless @output_file.is_a?(String) && @output_dir
+
+      File.dirname((Pathname.new(@output_dir) + @output_file).to_s)
+    end
+
     class CodeComment
       def initialize(language)
         raise "language #{language} not supported" if code_comment(language.to_sym).nil?
