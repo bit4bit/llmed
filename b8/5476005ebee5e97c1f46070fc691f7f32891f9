@@ -1,0 +1,40 @@
+lib/llm.rb
+  s_2e0a222225675d::t_5ba7a05c257099 201-204
+  s_2e0a222225675d::t_a660189149f651 235,239
+  s_2e0a222225675d::t_83fe3e97652c0d 259-260
+  s_2e0a222225675d::t_d8ac87a0bf07ad 272-273
+  s_2e0a222225675d::t_4906fee9293e08 327-376
+  s_2e0a222225675d::t_2b8f9d7f458e9a 216
+  s_2e0a222225675d::t_b9b9c75323d931 228
+  s_2e0a222225675d::t_9b98809ad31181 244-245,248-249,252
+  s_2e0a222225675d::t_b296cc4fdc6e8c 280
+  s_2e0a222225675d::t_849056038f3bae 321
+exe/llmed.literate
+  s_2e0a222225675d::t_93b65789893120 109
+  s_2e0a222225675d::t_aa3007913ad138 20
+  s_2e0a222225675d::t_37debd1a55267a 46
+spec/claude_provider_spec.rb
+  s_2e0a222225675d::t_ac3a7ef3eee64a 62
+  s_2e0a222225675d::t_e14f7fdbf221f3 1-61,63-155,157-190
+  s_2e0a222225675d::t_576c483acc5f5d 156
+README.md
+  s_2e0a222225675d::t_10b5a05b49a506 52-57
+lib/llmed/configuration.rb
+  s_2e0a222225675d::t_e141b6f295dc0e 153-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b85476005ebee5e97c1f46070fc691f7f32891f9",
+  "prompts": {},
+  "sessions": {
+    "s_2e0a222225675d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c03ad02b-52b6-4096-83ee-71f0fa3b4c9a",
+        "model": "unknown"
+      },
+      "human_author": "Jovany Leandro G.C <bit4bit@riseup.net>"
+    }
+  }
+}
