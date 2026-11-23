@@ -198,11 +198,13 @@ class LLMed
       end
     end
 
-    class OpenCode
+    # Shared behavior for providers that shell out to a local coding CLI.
+    # Subclasses define DEFAULT_BIN, cli_name, provider_name, tmpdir_prefix
+    # and build_command(dir), and may override spawn_options(dir).
+    class CLIProvider
       include SourceCodeScrubbing
       private :source_code
 
-      DEFAULT_BIN = 'opencode'.freeze
       DEFAULT_TIMEOUT = 900
       PROMPT_SEPARATOR = "\n\n---\n\n".freeze
 
@@ -211,7 +213,7 @@ class LLMed
         args.delete(:api_key)
         @model = args.dig(:default_options, :chat_model)
         @llm_options = args.fetch(:llm_options, {}) || {}
-        @bin = @llm_options.fetch(:bin, DEFAULT_BIN)
+        @bin = @llm_options.fetch(:bin, self.class::DEFAULT_BIN)
         @dir = @llm_options[:dir]
         @timeout = @llm_options.fetch(:timeout, DEFAULT_TIMEOUT)
         @flags = @llm_options[:flags]
@@ -223,41 +225,39 @@ class LLMed
         if @dir
           chat_response(prompt, @dir)
         else
-          Dir.mktmpdir('llmed-opencode') { |dir| chat_response(prompt, dir) }
+          Dir.mktmpdir(tmpdir_prefix) { |dir| chat_response(prompt, dir) }
         end
       end
 
       private
 
       def chat_response(prompt, dir)
-        command = [@bin, 'run', '-m', @model, '--dir', dir]
+        command = build_command(dir)
         command.concat(@flags) if @flags
 
         start = Time.now
-        stdout, stderr, status = run(command, prompt)
+        stdout, stderr, status = run(command, prompt, dir)
         stop = Time.now
 
         cleaned = status.success? ? source_code(stdout) : ''
         if !status.success?
-          @logger.error("opencode run failed (exit: #{status.exitstatus}): #{stderr.to_s.lines.last(10).join}")
-          raise "opencode run failed for model #{@model}"
+          @logger.error("#{cli_name} run failed (exit: #{status.exitstatus}): #{stderr.to_s.lines.last(10).join}")
+          raise "#{cli_name} run failed for model #{@model}"
         end
         if cleaned.strip.empty?
-          @logger.error("opencode run failed (exit: success but empty output): #{stderr.to_s.lines.last(10).join}")
-          raise RetryableError, "opencode run failed for model #{@model}"
+          @logger.error("#{cli_name} run failed (exit: success but empty output): #{stderr.to_s.lines.last(10).join}")
+          raise RetryableError, "#{cli_name} run failed for model #{@model}"
         end
 
-        Response.new({ provider: :opencode,
+        Response.new({ provider: provider_name,
                        model: @model,
                        duration_seconds: stop.to_i - start.to_i,
                        source_code: cleaned,
                        total_tokens: nil })
       end
 
-      private
-
-      def run(command, prompt)
-        stdin, stdout, stderr, wait_thr = Open3.popen3(*command, spawn_options)
+      def run(command, prompt, dir = nil)
+        stdin, stdout, stderr, wait_thr = Open3.popen3(*command, spawn_options(dir))
 
         stdin_thread = prompt_writer(stdin, prompt)
         stdout_thread = stream_reader(stdout)
@@ -269,15 +269,15 @@ class LLMed
           stdout_thread.join
           stderr_thread.join
 
-          @logger.error("opencode run timed out after #{@timeout} seconds")
-          raise "opencode run timed out after #{@timeout} seconds"
+          @logger.error("#{cli_name} run timed out after #{@timeout} seconds")
+          raise "#{cli_name} run timed out after #{@timeout} seconds"
         end
 
         stdin_thread.join
         [stdout_thread.value, stderr_thread.value, wait_thr.value]
       end
 
-      def spawn_options
+      def spawn_options(_dir = nil)
         windows? ? { new_pgroup: true } : { pgroup: true }
       end
 
@@ -318,13 +318,62 @@ class LLMed
         send_signal('KILL', target) if wait_thr.alive?
         wait_thr.join(5)
 
-        @logger.warn("opencode timeout kill left pid #{wait_thr.pid} alive") if wait_thr.alive?
+        @logger.warn("#{cli_name} timeout kill left pid #{wait_thr.pid} alive") if wait_thr.alive?
       end
 
       def send_signal(signal, target)
         Process.kill(signal, target)
       rescue Errno::ESRCH, Errno::EPERM => e
-        @logger.warn("opencode timeout kill #{signal} to #{target} failed: #{e.message}")
+        @logger.warn("#{cli_name} timeout kill #{signal} to #{target} failed: #{e.message}")
+      end
+    end
+
+    class OpenCode < CLIProvider
+      DEFAULT_BIN = 'opencode'.freeze
+
+      private
+
+      def cli_name
+        'opencode'
+      end
+
+      def provider_name
+        :opencode
+      end
+
+      def tmpdir_prefix
+        'llmed-opencode'
+      end
+
+      def build_command(dir)
+        [@bin, 'run', '-m', @model, '--dir', dir]
+      end
+    end
+
+    # Claude Code has no --dir flag, so the sandbox is the child's working directory.
+    class ClaudeCode < CLIProvider
+      DEFAULT_BIN = 'claude'.freeze
+
+      private
+
+      def cli_name
+        'claude'
+      end
+
+      def provider_name
+        :claude
+      end
+
+      def tmpdir_prefix
+        'llmed-claude'
+      end
+
+      def build_command(_dir)
+        [@bin, '-p', '--output-format', 'text', '--model', @model]
+      end
+
+      def spawn_options(dir = nil)
+        dir ? super.merge(chdir: dir) : super
       end
     end
 
