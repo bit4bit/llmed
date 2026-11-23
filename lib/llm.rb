@@ -293,14 +293,20 @@ class LLMed
         stdout, stderr, status = run(command, prompt, dir)
         stop = Time.now
 
-        cleaned = status.success? ? source_code(stdout) : ''
+        raw = stdout.to_s
+        cleaned = status.success? ? source_code(raw) : ''
         if !status.success?
           @logger.error("#{cli_name} run failed (exit: #{status.exitstatus}): #{stderr.to_s.lines.last(10).join}")
           raise "#{cli_name} run failed for model #{@model}"
         end
         if cleaned.strip.empty?
+          @logger.error("#{cli_name} empty-output raw head: #{raw.byteslice(0, 200)}") unless raw.empty?
           @logger.error("#{cli_name} run failed (exit: success but empty output): #{stderr.to_s.lines.last(10).join}")
-          raise RetryableError, "#{cli_name} run failed for model #{@model}"
+          if raw.strip.empty?
+            raise RetryableError, "#{cli_name} run failed (RAW-EMPTY: model printed nothing, raw 0 bytes)"
+          else
+            raise RetryableError, "#{cli_name} run failed (SCRUBBED-EMPTY: raw #{raw.bytesize} bytes reduced to nothing by source_code extraction)"
+          end
         end
 
         Response.new({ provider: provider_name,
@@ -314,8 +320,8 @@ class LLMed
         stdin, stdout, stderr, wait_thr = Open3.popen3(*command, spawn_options(dir))
 
         stdin_thread = prompt_writer(stdin, prompt)
-        stdout_thread = stream_reader(stdout)
-        stderr_thread = stream_reader(stderr)
+        stdout_thread = stream_reader(stdout, 'stdout')
+        stderr_thread = stream_reader(stderr, 'stderr')
 
         unless wait_thr.join(@timeout)
           kill_child_tree(wait_thr)
@@ -354,11 +360,12 @@ class LLMed
         end
       end
 
-      def stream_reader(stream)
+      def stream_reader(stream, label)
         Thread.new do
           begin
             stream.read
-          rescue StandardError
+          rescue StandardError => e
+            @logger.error("#{label} read failure: #{e.message}")
             ''
           end
         end

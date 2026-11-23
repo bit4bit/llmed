@@ -22,29 +22,59 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
 end
 
 describe LLMed::LLM::OpenCode, '#chat transient mapping' do
-  def build_provider
+  def build_provider(log = StringIO.new)
     described_class.new(
-      logger: Logger.new(StringIO.new),
+      logger: Logger.new(log),
       api_key: nil,
       default_options: { chat_model: 'm' },
       llm_options: {}
     )
   end
 
-  def stub_run(stdout: '', stderr: '', success: true)
+  def stub_run(stdout: '', stderr: '', success: true, stdout_read_error: nil)
+    stdout_stream = double
+    if stdout_read_error
+      allow(stdout_stream).to receive(:read).and_raise(stdout_read_error)
+    else
+      allow(stdout_stream).to receive(:read).and_return(stdout)
+    end
     allow(Open3).to receive(:popen3).and_return(
       [double(write: nil, close: nil),
-       double(read: stdout),
+       stdout_stream,
        double(read: stderr),
        double(join: true, value: double(success?: success, exitstatus: success ? 0 : 1))]
     )
   end
 
-  it 'raises a RetryableError keeping the message shape on empty output' do
+  it 'raises RAW-EMPTY when the model printed nothing on a success exit' do
     stub_run(stdout: '')
 
     expect { build_provider.chat(messages: [{ role: 'user', content: 'p' }]) }
-      .to raise_error(LLMed::RetryableError, 'opencode run failed for model m')
+      .to raise_error(LLMed::RetryableError,
+                      'opencode run failed (RAW-EMPTY: model printed nothing, raw 0 bytes)')
+  end
+
+  it 'raises SCRUBBED-EMPTY with the byte count when fence markers scrub to nothing' do
+    log = StringIO.new
+    body = "```ruby\n```"
+    stub_run(stdout: body)
+
+    expect { build_provider(log).chat(messages: [{ role: 'user', content: 'p' }]) }
+      .to raise_error(LLMed::RetryableError,
+                      "opencode run failed (SCRUBBED-EMPTY: raw #{body.bytesize} bytes reduced to nothing by source_code extraction)")
+
+    expect(log.string).to include("opencode empty-output raw head: #{body.byteslice(0, 200)}")
+  end
+
+  it 'keeps the caller alive when reading stdout raises, logging the read failure' do
+    log = StringIO.new
+    stub_run(stdout_read_error: StandardError.new('pipe exploded'))
+
+    expect { build_provider(log).chat(messages: [{ role: 'user', content: 'p' }]) }
+      .to raise_error(LLMed::RetryableError,
+                      'opencode run failed (RAW-EMPTY: model printed nothing, raw 0 bytes)')
+
+    expect(log.string).to include('stdout read failure: pipe exploded')
   end
 
   it 'keeps a nonzero exit non-retryable' do
@@ -200,8 +230,8 @@ describe LLMed, 'compile_application retry of invalid model responses' do
 
     expect(output.string).to include("puts 'hola mundo'")
     expect(invocations.length).to eq(2)
-    expect(log.string.scan(/APPLICATION demo RETRY \d+\/\d+ after: opencode run failed for model m/))
-      .to eq(['APPLICATION demo RETRY 1/3 after: opencode run failed for model m'])
+    expect(log.string.scan(/APPLICATION demo RETRY \d+\/\d+ after: opencode run failed \(RAW-EMPTY: model printed nothing, raw 0 bytes\)/))
+      .to eq(['APPLICATION demo RETRY 1/3 after: opencode run failed (RAW-EMPTY: model printed nothing, raw 0 bytes)'])
   end
 
   it 'retries after an invalid syntax response and writes the artifact' do
