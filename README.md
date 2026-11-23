@@ -49,6 +49,12 @@ Alternatively, you can compile by asking the local [OpenCode](https://github.com
 set_llm provider: :opencode, api_key: nil, model: 'opencode-go/glm-5.3-flash'
 ```
 
+You can also compile with the local [Claude Code](https://docs.claude.com/en/docs/claude-code) CLI (`claude` on PATH; override with `options: {bin:}`). It runs `claude -p --output-format text --model <model>` with the prompt on stdin, inside a temporary directory (or `options: {dir:}`, used as the working directory). `{timeout:}` and `{flags:}` work as above. The `api_key:` is unused, Claude Code uses its own auth.
+
+```ruby
+set_llm provider: :claude, api_key: nil, model: 'sonnet'
+```
+
 Since version 0.4.0, literate programming was introduced, and it is now possible to write code using a markdown-like syntax.
 
 ```md

@@ -17,7 +17,7 @@ output_file = 'a.out.ollmed'
 
 template = <<~TMP
 #% Minimal example
-#% llm_provider : like_openai | openai | anthropic | opencode
+#% llm_provider : like_openai | openai | anthropic | opencode | claude
 #!environment llm_provider like_openai
 #% llm_provider_model : depends provider
 #!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
@@ -43,7 +43,7 @@ OptionParser.new do |parser|
     # A minimal example
     <!--
     #% Minimal example
-    #% llm_provider : like_openai | openai | anthropic | opencode
+    #% llm_provider : like_openai | openai | anthropic | opencode | claude
     #!environment llm_provider like_openai
     #% llm_provider_model : depends provider
     #!environment llm_provider_model Qwen/Qwen2.5-Coder-32B-Instruct
@@ -106,7 +106,7 @@ LLMed::LiterateProgramming.execute(source_code, output_file: output_file) do |co
     end
   end
 
-  if provider_api_key.strip.empty? && !%i[opencode test].include?(provider)
+  if provider_api_key.strip.empty? && !%i[opencode claude test].include?(provider)
     logger.error "LLMED_PROVIDER_API_KEY is not set. Please set the environment variable and try again."
     exit 1
   end
