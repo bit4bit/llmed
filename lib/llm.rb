@@ -40,7 +40,9 @@ class LLMed
       module_function
 
       def validate!(language, source, logger)
-        return validate_java!(source, logger) if language.to_s.downcase == 'java'
+        lang = language.to_s.downcase
+        return validate_java!(source, logger) if lang == 'java'
+        return validate_html!(source, logger) if lang == 'html'
 
         checker = CHECKERS[language.to_s.downcase]
         unless checker
@@ -89,6 +91,32 @@ class LLMed
       rescue Errno::ENOENT, Errno::EACCES => e
         logger.warn("syntax checker unavailable for java: #{e.message}")
         true
+      end
+
+      # An HTML response is checked without any external binary: a truncated
+      # LLM response (missing closing tags, unbalanced script/style blocks)
+      # is the common upstream failure mode and must not be cached as a
+      # broken artifact.
+      def validate_html!(source, logger)
+        s = source.to_s
+        unless s =~ /<html\b/i
+          return html_check_failed!(logger, 'missing <html element')
+        end
+        unless s.strip =~ %r{</html>\z}i
+          return html_check_failed!(logger, 'source does not end with </html>')
+        end
+        if s.scan(/<script\b/i).length != s.scan(%r{</script\b}i).length
+          return html_check_failed!(logger, 'unbalanced <script> tags')
+        end
+        if s.scan(/<style\b/i).length != s.scan(%r{</style\b}i).length
+          return html_check_failed!(logger, 'unbalanced <style> tags')
+        end
+        true
+      end
+
+      def html_check_failed!(logger, reason)
+        logger.error("syntax check failed for html: #{reason}")
+        raise RetryableError, "syntax check failed for html: #{reason}"
       end
     end
 

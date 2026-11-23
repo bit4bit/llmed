@@ -111,6 +111,46 @@ describe LLMed::LLM::SyntaxCheck, '#validate!' do
     end
   end
 
+  describe 'html' do
+    def valid_html
+      <<~HTML
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>ok</title>
+            <script>var x = 1;</script>
+            <style>body { margin: 0; }</style>
+          </head>
+          <body>hi</body>
+        </html>
+      HTML
+    end
+
+    it 'accepts a complete minimal html page' do
+      expect(described_class.validate!('html', valid_html, logger)).to be(true)
+    end
+
+    it 'rejects a page with two script opens and one script close' do
+      source = valid_html.sub(%r{</script>}, '')
+      expect {
+        described_class.validate!('html', source, logger)
+      }.to raise_error(/syntax check failed for html: /)
+    end
+
+    it 'rejects a page truncated mid-file with no closing html' do
+      source = valid_html[0, valid_html.length / 2]
+      expect {
+        described_class.validate!('html', source, logger)
+      }.to raise_error(/syntax check failed for html: /)
+    end
+
+    it 'rejects an empty string' do
+      expect {
+        described_class.validate!('html', '', logger)
+      }.to raise_error(/syntax check failed for html: /)
+    end
+  end
+
   it 'skips unknown languages returning true' do
     expect(described_class.validate!('cobol', "DISPLAY 'HI'.\n", logger)).to be(true)
     expect(messages).to include('syntax checker unavailable for cobol')
