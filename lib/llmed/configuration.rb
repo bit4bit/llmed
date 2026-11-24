@@ -128,13 +128,15 @@ class LLMed
         LLMed::LLM::OpenAI.new(
           logger: @logger,
           api_key: @provider_api_key,
-          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model }
+          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model },
+          llm_options: @provider_options || {}
         )
       when :anthropic
         LLMed::LLM::Anthropic.new(
           logger: @logger,
           api_key: @provider_api_key,
-          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model }
+          default_options: { max_tokens: nil, temperature: 0.7, chat_model: @provider_model },
+          llm_options: @provider_options || {}
         )
       when :like_openai
         LLMed::LLM::LikeOpenAI.new(

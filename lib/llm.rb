@@ -175,6 +175,9 @@ class LLMed
 
       def initialize(**args)
         @logger = args.delete(:logger)
+        llm_options = (args[:llm_options] || {}).dup
+        @max_tokens = resolve_max_tokens(llm_options.delete(:max_tokens))
+        args[:llm_options] = llm_options if args.key?(:llm_options)
         @llm = Langchain::LLM::OpenAI.new(**llm_arguments(args))
       end
 
@@ -190,7 +193,7 @@ class LLMed
 
         start = Time.now
         begin
-          llm_response = @llm.chat(messages: messages, max_tokens: MAX_TOKENS)
+          llm_response = @llm.chat(messages: messages, max_tokens: @max_tokens)
         rescue *RETRYABLE_TRANSPORT_ERRORS => e
           @logger.error("provider transport failure: #{e.message}")
           raise RetryableError, "transport failure calling #{provider}: #{e.message}"
@@ -213,9 +216,19 @@ class LLMed
 
       private
       def warn_token_limits(llm_response)
-        if llm_response.completion_tokens.to_i >= MAX_TOKENS
-          @logger.warn("POSSIBLE INCONSISTENCY COMPLETED TOKENS REACHED MAX TOKENS #{MAX_TOKENS}")
+        if llm_response.completion_tokens.to_i >= @max_tokens
+          @logger.warn("POSSIBLE INCONSISTENCY COMPLETED TOKENS REACHED MAX TOKENS #{@max_tokens}")
         end
+      end
+
+      # Per-chat completion cap: MAX_TOKENS unless the caller set
+      # llm_options[:max_tokens] to a positive integer.
+      def resolve_max_tokens(value)
+        return MAX_TOKENS if value.nil?
+        return value if value.is_a?(Integer) && value.positive?
+
+        @logger.warn("invalid max_tokens option ignored: #{value}")
+        MAX_TOKENS
       end
 
       def llm_arguments(args)
